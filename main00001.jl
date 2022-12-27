@@ -19,7 +19,35 @@
 # now, the agent's utility is how long it has to wait to find what it searches for. 
 # as some agents use the internet more than others, the activation scheme is usually Poisson. 
 
+using Random
+using StatsBase
+
 ## global parameters
 activation::String="Poisson"
 # what is the probability that a random successful search results in an ad being clicked on?
 clickProb::Rational{Int64}=1//100
+# now, we need the parameters for the Levy processes generating the two Beta parameters for each agent 
+agtCnt=1000
+levy1::Float64=4.0
+levy2::Float64=5.0
+# What is the search granularity (the margin of error within the search is considered to hit the target)
+searchGrain::Float64=.05
+# what is the agent simulation depth? (the number of simulations agents run)
+agentSimDepth::Int64=1000
+# what is the search engine search depth?
+searchSimDepth::Int64=1000
+
+# also, we need the privacy parameters 
+# we use a zero-inflated Poisson for the privacy parameter. 
+# since the agent's utility is measured in how many attempts it takes to get its desired result.
+
+
+include("objects.jl")
+include("functions.jl")
+# generate searching agents 
+agtList=agent[]
+
+searchEngineList=searchEngine[]
+@searchGen(.5,4.5)
+@searchGen(.75,6.5)
+println(searchEngineList)
