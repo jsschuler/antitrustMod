@@ -1,16 +1,16 @@
 # we need a basic agent object
 struct agent
-    privacy::Rational{Int64}
-    interest1::Rational{Int64}
-    interest2::Rational{Int64}
+    privacy::Int64
+    interest1::Float64
+    interest2::Float64
 
 end
 
 # and we need a simulated agent object for search engines to simulate 
 struct simAgent
-    privacy::Rational{Int64}
-    interest1::Rational{Int64}
-    interest2::Rational{Int64}
+    privacy::Int64
+    interest1::Float64
+    interest2::Float64
 end 
 
 
@@ -25,11 +25,6 @@ end
 abstract type searchEngine
 end
 
-    privacy::Rational{Int64}
-    interest1::Rational{Int64}
-    interest2::Rational{Int64}
-
-end
 
 # we need an advertizer object
 

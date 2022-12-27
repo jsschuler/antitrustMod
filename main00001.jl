@@ -21,7 +21,7 @@
 
 using Random
 using StatsBase
-
+using Distributions
 ## global parameters
 activation::String="Poisson"
 # what is the probability that a random successful search results in an ad being clicked on?
@@ -30,6 +30,8 @@ clickProb::Rational{Int64}=1//100
 agtCnt=1000
 levy1::Float64=4.0
 levy2::Float64=5.0
+levyDist1=Levy(levy1)
+levyDist2=Levy(levy2)
 # What is the search granularity (the margin of error within the search is considered to hit the target)
 searchGrain::Float64=.05
 # what is the agent simulation depth? (the number of simulations agents run)
@@ -40,6 +42,9 @@ searchSimDepth::Int64=1000
 # also, we need the privacy parameters 
 # we use a zero-inflated Poisson for the privacy parameter. 
 # since the agent's utility is measured in how many attempts it takes to get its desired result.
+zeroInflation::Float64=.7
+poissonParameter::Float64=5.0
+poissonDist=Poisson(poissonParameter)
 
 
 include("objects.jl")
