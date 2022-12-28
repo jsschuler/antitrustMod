@@ -25,7 +25,7 @@ using Distributions
 ## global parameters
 activation::String="Poisson"
 # what is the probability that a random successful search results in an ad being clicked on?
-clickProb::Rational{Int64}=1//100
+clickProb::Float=0.001
 # now, we need the parameters for the Levy processes generating the two Beta parameters for each agent 
 agtCnt=100000
 levy1::Float64=4.0
@@ -47,7 +47,10 @@ searchRounds::Int64=1000
 zeroInflation::Float64=.7
 poissonParameter::Float64=5.0
 poissonDist=Poisson(poissonParameter)
-
+# Also, what do the search engines use as the standard sampler?
+standardSearch::Uniform{Float64}=Uniform()
+# finally, what is the mode tolerance?
+modeTolerance::Float64=.05
 
 include("objects.jl")
 include("functions.jl")

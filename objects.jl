@@ -12,15 +12,8 @@ struct simAgent
     privacy::Int64
     interest1::Float64
     interest2::Float64
+    betaObj::Beta{Float64}=Beta(interest1,interest2)
 end 
-
-
-# we need an advertizer object
-
-mutable struct advertiser
-    profit::Int64
-end
-
 # now we need search engines
 
 abstract type searchEngine
