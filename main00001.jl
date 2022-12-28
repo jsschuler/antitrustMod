@@ -27,7 +27,7 @@ activation::String="Poisson"
 # what is the probability that a random successful search results in an ad being clicked on?
 clickProb::Rational{Int64}=1//100
 # now, we need the parameters for the Levy processes generating the two Beta parameters for each agent 
-agtCnt=1000
+agtCnt=100000
 levy1::Float64=4.0
 levy2::Float64=5.0
 levyDist1=Levy(levy1)
@@ -51,8 +51,12 @@ include("objects.jl")
 include("functions.jl")
 # generate searching agents 
 agtList=agent[]
+for i in 1:agtCnt
+    agentGen()
+end   
+
 
 searchEngineList=searchEngine[]
 @searchGen(.5,4.5)
-@searchGen(.75,6.5)
-println(searchEngineList)
+#@searchGen(.75,6.5)
+#println(searchEngineList)
