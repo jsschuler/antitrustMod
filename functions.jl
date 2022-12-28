@@ -23,3 +23,15 @@ function agentGen()
     privacy::Int64=privacyGen()
     push!(agtList,agent(privacy,interest1,interest2))
 end   
+
+# we need a function where the agent reveals its preferences
+
+function preference(agt::Agent)
+    return rand(agt.betaObj,1)[1]
+end
+
+
+# now we need a search function 
+function search(agt::Agent,engine::searchEngine)
+
+end   

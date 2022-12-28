@@ -3,6 +3,7 @@ struct agent
     privacy::Int64
     interest1::Float64
     interest2::Float64
+    betaObj::Beta{Float64}=Beta(interest1,interest2)
 
 end
 
@@ -55,15 +56,17 @@ macro searchGen(learning::Float64,efficiency::Float64)
         mutable struct $searchName <: searchEngine
             efficiency::Float64
             learning::Float64
+            profit::Float64
         end 
 
         struct $cloneName <: cloneEngine
             efficiency::Float64
             learning::Float64
+            profit::Float64
         end
         # now create the function that generates the struct 
         index::Int64=length(searchEngineList)
-        push!(searchEngineList,$searchName($efficiency,$learning))
+        push!(searchEngineList,$searchName($efficiency,$learning,0.0))
         
 
 

@@ -38,6 +38,8 @@ searchGrain::Float64=.05
 agentSimDepth::Int64=1000
 # what is the search engine search depth?
 searchSimDepth::Int64=1000
+# How many search rounds do the agents engage in?
+searchRounds::Int64=1000
 
 # also, we need the privacy parameters 
 # we use a zero-inflated Poisson for the privacy parameter. 
@@ -60,3 +62,6 @@ searchEngineList=searchEngine[]
 @searchGen(.5,4.5)
 #@searchGen(.75,6.5)
 #println(searchEngineList)
+# now, some agents use search more often than others 
+# how do we represent this?
+# for now, just select randomly with replacement. 
