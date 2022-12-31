@@ -1,20 +1,33 @@
+# we need a union type that is either uniform or Beta.
+probType=Union{Uniform{Float64},Beta{Float64}}
+
 # we need a basic agent object
 struct agent
     privacy::Int64
     interest1::Float64
     interest2::Float64
-    betaObj::Beta{Float64}=Beta(interest1,interest2)
-
+    betaObj::probType
 end
+
+struct mask
+    agt::agent
+    history::Array{Float64}
+end
+
 
 # and we need a simulated agent object for search engines to simulate 
 struct simAgent
     privacy::Int64
     interest1::Float64
     interest2::Float64
-    betaObj::Beta{Float64}=Beta(interest1,interest2)
+    betaObj::probType
 end 
 # now we need search engines
+
+struct simMask
+    agt::agent
+    history::Array{Float64}
+end
 
 abstract type searchEngine
 end

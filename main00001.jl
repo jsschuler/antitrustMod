@@ -22,18 +22,19 @@
 using Random
 using StatsBase
 using Distributions
+using Plots
 ## global parameters
 activation::String="Poisson"
 # what is the probability that a random successful search results in an ad being clicked on?
-clickProb::Float=0.001
-# now, we need the parameters for the Levy processes generating the two Beta parameters for each agent 
-agtCnt=100000
-levy1::Float64=4.0
-levy2::Float64=5.0
-levyDist1=Levy(levy1)
-levyDist2=Levy(levy2)
+clickProb::Float64=0.001
+# now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
+agtCnt=10000
+lambda1::Float64=4.0
+lambda2::Float64=5.0
+expDist1=Exponential(lambda1)
+expDist2=Exponential(lambda2)
 # What is the search granularity (the margin of error within the search is considered to hit the target)
-searchGrain::Float64=.05
+searchGrain::Float64=.01
 # what is the agent simulation depth? (the number of simulations agents run)
 agentSimDepth::Int64=1000
 # what is the search engine search depth?
@@ -49,8 +50,10 @@ poissonParameter::Float64=5.0
 poissonDist=Poisson(poissonParameter)
 # Also, what do the search engines use as the standard sampler?
 standardSearch::Uniform{Float64}=Uniform()
-# finally, what is the mode tolerance?
-modeTolerance::Float64=.05
+# finally, what is the parameter tolerance?
+paramTolerance::Float64=.01
+# and how deep does the search engine search to identify agents?
+identifyDepth::Int64=1000
 
 include("objects.jl")
 include("functions.jl")
@@ -59,12 +62,51 @@ agtList=agent[]
 for i in 1:agtCnt
     agentGen()
 end   
-
+# now generate masks for each agent
+maskList=mask[]
+for agt in agtList
+    push!(maskList,maskGen(agt))
+end
 
 searchEngineList=searchEngine[]
 @searchGen(.5,4.5)
 #@searchGen(.75,6.5)
 #println(searchEngineList)
-# now, some agents use search more often than others 
-# how do we represent this?
-# for now, just select randomly with replacement. 
+
+# now test functions
+#tst1=identify(searchEngineList[],agtList[1],.7)
+#println(tst1)
+
+#keep=Bool[]
+#for t in 1:100000
+#    push!(keep,identify(searchEngineList[],agtList[1],.7))
+#end
+#println(sum(keep))
+
+#println(search(maskList[1],searchEngineList[1]))
+
+# let's take a look at agent parameters
+#xParam=[]
+#yParam=[]
+#for agt in agtList
+#    push!(xParam,agt.interest1)
+#    push!(yParam,agt.interest2)
+#end 
+#scatter(xParam,yParam)
+
+
+for t in 1:1000
+    println("New Mask")
+    search(maskList[1],searchEngineList[1])
+end
+println(typeof(searchEngineList[1]))
+println(typeof(maskList[1]))
+println(identify(searchEngineList[1],maskList[1]))
+# now, prepare a run
+identity=Bool[]
+for mask in maskList
+    for t in 1:1000
+        search(mask,searchEngineList[1])
+    end
+    push!(identity,identify(searchEngineList[1],mask))
+end
