@@ -8,7 +8,7 @@ struct agent
     interest2::Float64
     betaObj::probType
 end
-
+ 
 struct mask
     agt::agent
     history::Array{Float64}

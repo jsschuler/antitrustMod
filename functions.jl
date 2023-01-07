@@ -1,7 +1,7 @@
 
 
 # we need a function that generates the privacy utility
-
+ 
 function privacyGen()
     global zeroInflation
     global poissonDist
