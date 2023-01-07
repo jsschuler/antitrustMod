@@ -96,3 +96,14 @@ end
 function util(agt::agent,arg::Float64)
     return pdf(agt.gammaObj,arg)
 end
+
+function googleGen()
+    global agtList
+    global searchList
+    histDict::Dict{agent,Array{Float64}}=Dict()
+    for agt in agtList
+        histDict[agt]=Float64[]
+    end
+    push!(searchList,Google(histDict,Int64[]))
+
+end

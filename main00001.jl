@@ -70,49 +70,7 @@ println(util(agtList[1],13.0))
 println(util(agtList[1],agtList[1].blissPoint-.05))
 println(util(agtList[1],agtList[1].blissPoint))
 println(util(agtList[1],agtList[1].blissPoint+0.05))
-#for t in 1:1000
-#    prefTest=preferenceGen()
-#end
-#myPrefs=preferenceGen()
-#genprefs=Uniform()
-#timeArrays=[]
-#unifArrays=[]
-#for t in 1:100000
-#    chk=weightTime(myPrefs,myPrefs)
-#    #println(chk)
-#    push!(timeArrays,chk)
-#    push!(unifArrays,weightTime(genprefs,myPrefs))
-#end
-#println(mean(timeArrays))
-#println(mean(unifArrays))
-# generate searching agents 
-#agtList=agent[]
-#for i in 1:agtCnt
-#    agentGen()
-#end   
 
-#searchEngineList=searchEngine[]
-#@searchGen(.5,4.5)
-#@searchGen(.75,6.5)
-#println(searchEngineList)
+searchList=searchEngine[]
 
-# now test functions
-#tst1=identify(searchEngineList[],agtList[1],.7)
-#println(tst1)
-
-#keep=Bool[]
-#for t in 1:100000
-#    push!(keep,identify(searchEngineList[],agtList[1],.7))
-#end
-#println(sum(keep))
-
-#println(search(maskList[1],searchEngineList[1]))
-
-# let's take a look at agent parameters
-#xParam=[]
-#yParam=[]
-#for agt in agtList
-#    push!(xParam,agt.interest1)
-#    push!(yParam,agt.interest2)
-#end 
-#scatter(xParam,yParam)
+googleGen()
