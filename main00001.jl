@@ -60,7 +60,7 @@ addprocs(16)
 @everywhere include("agentInit.jl")
 include("objects.jl")
 #include("functions.jl")
-include("searchMod.jl")
+@everywhere  include("searchMod.jl")
 # test functions
 #alphaTest=alphaGen(.4,10.0)
 #alphaTest=alphaGen(.2,5.0)
@@ -136,11 +136,11 @@ for time in 1:modTime
         searchCount::Int64=rand(searchCountDist,1)[1]
         for k in 1:searchCount
             push!(searchAgtVector,agt)
-            push!(engineList,agt.agt.currEngine)
+            push!(engineList,agt.currEngine)
         end    
     end
     # now run the parallel search process
-    searchRes=pmap(searchMod.search,searchAgtVector,engineList)
+    searchRes=pmap(search,searchAgtVector,engineList)
     # if they prefer it, they keep using it. 
 
 

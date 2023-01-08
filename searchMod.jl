@@ -78,6 +78,6 @@ function search(agt::agtModule.agent,engine::Google)
     # we need to know the probability of the agent clicking on an ad 
     global clickProb
     global time
-    return subsearch(agt,engine)
+    return subsearch(agt,engine,searchResolution,clickProb,time)
     
 end
