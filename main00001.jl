@@ -74,8 +74,9 @@ time=1
 googleGen()
 #duckGen()
 println(typeof(searchList[1]))
+println(fieldnames(Google))
 searchList[1].revenue[time]=0
 for t in 1:1000
     search(agtList[1],searchList[1])
 end
-println(Google.revenue)
+println(searchList[1].revenue)

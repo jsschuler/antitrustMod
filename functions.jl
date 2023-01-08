@@ -142,7 +142,7 @@ function search(agt::agent,engine::Google)
             push!(engine.agentHistory[agt],guess)
             # did the agent click on an ad?
             if rand(U,1)[1] <= clickProb
-                Google.revenue[tick]=Google.revenue[tick]+1
+                engine.revenue[time]=engine.revenue[time]+1
             end
 
             break
