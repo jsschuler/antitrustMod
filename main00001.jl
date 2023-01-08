@@ -30,8 +30,6 @@ Random.seed!(123)
 ## global parameters
 # what is the probability that a random successful search results in an ad being clicked on?
 clickProb::Float64=0.05
-# how much does this probability fall for each additional search step?
-searchDecay::Float64=0.95
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
 agtCnt=1000
 # now, we need to generate the parameters for the agent's interests
@@ -72,5 +70,12 @@ println(util(agtList[1],agtList[1].blissPoint))
 println(util(agtList[1],agtList[1].blissPoint+0.05))
 
 searchList=searchEngine[]
-
+time=1
 googleGen()
+#duckGen()
+println(typeof(searchList[1]))
+searchList[1].revenue[time]=0
+for t in 1:1000
+    search(agtList[1],searchList[1])
+end
+println(Google.revenue)

@@ -89,7 +89,7 @@ function agentGen()
     # now, fit a gamma distribution with a scale of 1 to this
     gammaK::Float64=blissPoint+1
     agtUtil=Gamma(gammaK,1)
-    push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint))
+    push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
 end   
 
 # now, we need a utility function for the agent
@@ -104,6 +104,59 @@ function googleGen()
     for agt in agtList
         histDict[agt]=Float64[]
     end
-    push!(searchList,Google(histDict,Int64[]))
+    push!(searchList,Google(histDict,Dict{Int64,Int64}()))
+
+end
+
+function duckGen()
+    global searchList
+    push!(searchList,DuckDuckGo(Int64[]))
+end  
+
+# now we need a search function
+
+function search(agt::agent,engine::Google)
+    # first, fit the agent's history 
+    bestdist::probType=Uniform()
+    U::Uniform=Uniform()
+    if length(engine.agentHistory) >= 30
+        bestDist=fit(Beta,engine.agentHistory)
+    else
+        bestdist=Uniform()
+    end
+    # now, begin the search process 
+    global searchResolution
+    # we need to know the probability of the agent clicking on an ad 
+    global clickProb
+    global time
+    # generate actual desired result
+    result::Float64=rand(agt.betaObj,1)[1]
+    # now prepare the loop
+    tick::Int64=0
+    cum::Float64=0.0
+    while true
+        tick=tick+1
+        guess::Float64=rand(bestdist,1)[1]
+        if abs(guess-result) <= searchResolution
+            # add this to the agent's history 
+            push!(engine.agentHistory[agt],guess)
+            # did the agent click on an ad?
+            if rand(U,1)[1] <= clickProb
+                Google.revenue[tick]=Google.revenue[tick]+1
+            end
+
+            break
+        else
+            if guess > result
+                # find out the quantile of the guess for the assumed distribution
+                cum=cdf(bestdist,guess)
+                guess=quantile(bestdist,rand(U,1)[1]*(1.0-cum)+cum)
+            else
+                cum=cdf(bestdist,guess)
+                guess=quantile(bestdist,rand(U,1)[1]*(cum))
+            end
+        end
+    end
+    return tick
 
 end

@@ -9,6 +9,7 @@ struct agent
     expUnif::Float64
     expSubj::Float64
     blissPoint::Float64
+    history::Dict{Int64,Array{Int64}}
 end
  
 # now we need a search engine object
@@ -21,11 +22,11 @@ end
 
 mutable struct Google <: searchEngine
     agentHistory::Dict{agent,Array{Float64}}
-    revenue::Array{Int64}
+    revenue::Dict{Int64,Int64}
 end 
 
-mutable struct Google <: searchEngine
+mutable struct DuckDuckGo <: searchEngine
     #agentHistory::Dict{agent,Array{Float64}}
-    revenue::Array{Int64}
+    revenue::Dict{Int64,Int64}
 end 
 
