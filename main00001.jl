@@ -46,7 +46,9 @@ betaGen::Exponential{Float64}=Exponential(5)
 privacyBeta::Beta{Float64}=Beta(1.0,3.0)
 # how close does the offered search result have to be before the agent accepts it?
 searchResolution::Float64=.05
-
+# we need a Poisson process for how many agents switch 
+switchPct::Float64=.1
+poissonDist::Poisson{Float64}=Poisson(switchPct*agtCnt)
 
 
 
@@ -83,4 +85,9 @@ println(searchList[1].revenue)
 
 # now it is time to build the main model 
 
+# Step 0: Initialize all agents, Initialize Google and set the tick on which Duck Duck Go will enter 
 
+# now, for each tick 
+# some Poisson number of agents try a different search engine if one is available. 
+# if they prefer it, they keep using it. 
+# we track revenue and agent utility over time
