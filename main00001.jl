@@ -80,3 +80,7 @@ for t in 1:1000
     search(agtList[1],searchList[1])
 end
 println(searchList[1].revenue)
+
+# now it is time to build the main model 
+
+

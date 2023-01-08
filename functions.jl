@@ -160,3 +160,43 @@ function search(agt::agent,engine::Google)
     return tick
 
 end
+
+
+function search(agt::agent,engine::DuckDuckGo)
+    # first, fit the agent's history 
+    bestdist::probType=Uniform()
+    U::Uniform=Uniform()
+    bestdist=Uniform()
+    # now, begin the search process 
+    global searchResolution
+    # we need to know the probability of the agent clicking on an ad 
+    global clickProb
+    global time
+    # generate actual desired result
+    result::Float64=rand(agt.betaObj,1)[1]
+    # now prepare the loop
+    tick::Int64=0
+    cum::Float64=0.0
+    while true
+        tick=tick+1
+        guess::Float64=rand(bestdist,1)[1]
+        if abs(guess-result) <= searchResolution
+            # did the agent click on an ad?
+            if rand(U,1)[1] <= clickProb
+                engine.revenue[time]=engine.revenue[time]+1
+            end
+
+            break
+        else
+            if guess > result
+                # find out the quantile of the guess for the assumed distribution
+                cum=cdf(bestdist,guess)
+                guess=quantile(bestdist,rand(U,1)[1]*(1.0-cum)+cum)
+            else
+                cum=cdf(bestdist,guess)
+                guess=quantile(bestdist,rand(U,1)[1]*(cum))
+            end
+        end
+    end
+    return tick
+end
