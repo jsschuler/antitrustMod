@@ -24,6 +24,7 @@ using StatsBase
 using Distributions
 using Plots
 using Distributed
+using JLD2
 #Random.seed!(1234)
 Random.seed!(123)
 
@@ -32,7 +33,7 @@ Random.seed!(123)
 # what is the probability that a random successful search results in an ad being clicked on?
 clickProb::Float64=0.05
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
-agtCnt=1000
+agtCnt=10000
 # now, we need to generate the parameters for the agent's interests
 # represented by beta distributions. 
 # we parameterize the beta distribution by its mode. Given a mode, the two 
@@ -54,9 +55,10 @@ poissonDist::Poisson{Float64}=Poisson(switchPct*agtCnt)
 
 addprocs(16)
 
+
+@everywhere include("agentInit.jl")
 include("objects.jl")
 include("functions.jl")
-
 # test functions
 #alphaTest=alphaGen(.4,10.0)
 #alphaTest=alphaGen(.2,5.0)
@@ -92,9 +94,18 @@ include("functions.jl")
 #    agentGen()
 #end
 
-agtList=pmap(agtModule.agentGen,repeat([privacyBeta],agtCnt),repeat([modeGen],agtCnt),repeat([betaGen],agtCnt),repeat([searchResolution],agtCnt))
+#agtList=pmap(agtModule.agentGen,repeat([privacyBeta],agtCnt),repeat([modeGen],agtCnt),repeat([betaGen],agtCnt),repeat([searchResolution],agtCnt))
+#println(agtList)
+# now save agents for later use
+#save_object("myAgents.jld2", agtList)
+# now try loading
+agtList=load_object("myAgents.jld2")
 println(agtList)
+
 # now, for each tick 
+
+
+
 # some Poisson number of agents try a different search engine if one is available. 
 # if they prefer it, they keep using it. 
 # we track revenue and agent utility over time
