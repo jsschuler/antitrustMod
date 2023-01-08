@@ -4,7 +4,7 @@ module agtModule
 
     # we need a basic agent object
 
-    struct agent
+    mutable struct agent
         privacy::Float64
         betaObj::Beta{Float64}
         gammaObj::Gamma{Float64}
@@ -12,7 +12,16 @@ module agtModule
         expSubj::Float64
         blissPoint::Float64
         history::Dict{Int64,Array{Int64}}
+        currEngine::Any
+        prevEngine::Any
     end
+
+    # for convenience, we need an agent object we can send off to parallel processes
+    struct parAgent
+        history::Array{Int64}
+    end
+    
+    
 
     function agentGen(privacyBeta,modeGen,betaGen,searchResolution)
 
@@ -101,6 +110,11 @@ module agtModule
         gammaK::Float64=blissPoint+1
         agtUtil=Gamma(gammaK,1)
         #push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
-        return agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}())
+        return agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),nothing,nothing)
     end   
+end
+
+# now, we need a utility function for the agent
+function util(agt::agtModule.agent,arg::Float64)
+    return pdf(agt.gammaObj,arg)
 end

@@ -51,14 +51,16 @@ searchResolution::Float64=.05
 # we need a Poisson process for how many agents switch 
 switchPct::Float64=.1
 poissonDist::Poisson{Float64}=Poisson(switchPct*agtCnt)
-
+# and a probability distribution for how much agents search 
+searchCountDist::NegativeBinomial{Float64}=NegativeBinomial(1.0,.01)
 
 addprocs(16)
 
 
 @everywhere include("agentInit.jl")
 include("objects.jl")
-include("functions.jl")
+#include("functions.jl")
+include("searchMod.jl")
 # test functions
 #alphaTest=alphaGen(.4,10.0)
 #alphaTest=alphaGen(.2,5.0)
@@ -100,12 +102,48 @@ include("functions.jl")
 #save_object("myAgents.jld2", agtList)
 # now try loading
 agtList=load_object("myAgents.jld2")
-println(agtList)
+#println(agtList)
 
+searchList=searchEngine[]
+# initialize Google 
+googleGen()
+println("All searches")
+println(typeof.(searchList))
+# initialize search engine to Google for all agents 
+for agt in agtList
+    agt.currEngine=searchList[1]
+end
+
+
+modTime::Int64=1
 # now, for each tick 
-
-
-
+for time in 1:modTime
 # some Poisson number of agents try a different search engine if one is available. 
-# if they prefer it, they keep using it. 
-# we track revenue and agent utility over time
+    if length(searchList) > 1
+        switchAgents::Array{agtModule.agent}=sample(agtList,rand(poissonDist,1)[1],replace=false)
+        for agt in switchAgents
+            # The agent chooses a search engine at randon aside from the one it is using 
+            choices::searchEngine=sample(collect(setdiff(Set(searchList),Set([agt.currEngine]))),1)[1]
+            agt.prevEngine=agt.currEngine
+            agt.currEngine=choices
+        end
+    end
+    # all agents search 
+
+    searchAgtVector::Array{agtModule.agent}=agtModule.agent[]
+    engineList::Array{searchEngine}=searchEngine[]
+    for agt in agtList
+        searchCount::Int64=rand(searchCountDist,1)[1]
+        for k in 1:searchCount
+            push!(searchAgtVector,agt)
+            push!(engineList,agt.agt.currEngine)
+        end    
+    end
+    # now run the parallel search process
+    searchRes=pmap(searchMod.search,searchAgtVector,engineList)
+    # if they prefer it, they keep using it. 
+
+
+
+    # we track revenue and agent utility over time
+end
