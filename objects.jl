@@ -14,7 +14,7 @@ abstract type searchEngine
 end
 
 mutable struct Google <: searchEngine
-    agentHistory::Dict{agent,Array{Float64}}
+    agentHistory::Dict{agtModule.agent,Array{Float64}}
     revenue::Dict{Int64,Int64}
 end 
 

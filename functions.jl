@@ -1,6 +1,6 @@
 
 # now, we need a utility function for the agent
-function util(agt::agent,arg::Float64)
+function util(agt::agtModule.agent,arg::Float64)
     return pdf(agt.gammaObj,arg)
 end
 
@@ -22,7 +22,7 @@ end
 
 # now we need a search function
 
-function search(agt::agent,engine::Google)
+function search(agt::agtModule.agent,engine::Google)
     # first, fit the agent's history 
     bestdist::probType=Uniform()
     U::Uniform=Uniform()
@@ -69,7 +69,7 @@ function search(agt::agent,engine::Google)
 end
 
 
-function search(agt::agent,engine::DuckDuckGo)
+function search(agt::agtModule.agent,engine::DuckDuckGo)
     # first, fit the agent's history 
     bestdist::probType=Uniform()
     U::Uniform=Uniform()
