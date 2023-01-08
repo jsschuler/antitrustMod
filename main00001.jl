@@ -58,7 +58,7 @@ addprocs(16)
 
 
 @everywhere include("agentInit.jl")
-include("objects.jl")
+#include("objects.jl")
 #include("functions.jl")
 @everywhere  include("searchMod.jl")
 # test functions
