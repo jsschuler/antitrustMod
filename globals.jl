@@ -1,8 +1,8 @@
 ## global parameters
 # what is the probability that a random successful search results in an ad being clicked on?
-clickProb::Float64=0.05
+clickProb::Float64=0.5
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
-agtCnt=100
+agtCnt=10
 # now, we need to generate the parameters for the agent's interests
 # represented by beta distributions. 
 # we parameterize the beta distribution by its mode. Given a mode, the two 

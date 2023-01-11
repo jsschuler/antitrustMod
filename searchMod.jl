@@ -70,7 +70,7 @@ function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,
             end
         end
     end
-    return [tick,finGuess,newRevenue]
+    return Any[agt,tick,finGuess,newRevenue]
 end
 
 

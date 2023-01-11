@@ -82,7 +82,7 @@ searchList=searchEngine[]
 # initialize Google 
 googleGen()
 println("All searches")
-println(typeof.(searchList))
+println(length(searchList))
 # initialize search engine to Google for all agents 
 for agt in agtList
     agt.currEngine=searchList[1]
@@ -108,18 +108,27 @@ for time in 1:modTime
     engineList::Array{searchEngine}=searchEngine[]
     timeVec::Array{Int64}=Int64[]
     for agt in agtList
-        searchCount::Int64=rand(searchCountDist,1)[1]
+        searchCount::Int64=100+rand(searchCountDist,1)[1]
+        println(searchCount)
         for k in 1:searchCount
+            #println("Searching")
             push!(searchAgtVector,agt)
             push!(engineList,agt.currEngine)
             push!(timeVec,time)
+            #println(search(agt,agt.currEngine,time))
         end    
     end
     # now run the parallel search process
     searchRes=pmap(search,searchAgtVector,engineList,timeVec)
+    println(searchRes)
     # if they prefer it, they keep using it. 
-
-
+    # now, compute results 
+    for el in searchRes
+        # record agent's waiting time for utility purposes
+        el[1].history[time]=el[2]
+        # record the agent's history for the search engine 
+        el[1].currEngine.agentHistory=cat(el[1].currEngine.agentHistory,[el[3]],dims=1)
+    end
 
     # we track revenue and agent utility over time
 end
