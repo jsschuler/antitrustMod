@@ -2,7 +2,7 @@ abstract type searchEngine
 end
 
 mutable struct Google <: searchEngine
-    agentHistory::Dict{agtModule.agent,Array{Float64}}
+    agentHistory::Dict{agentMod.agent,Array{Float64}}
     revenue::Dict{Int64,Int64}
 end 
 
@@ -15,7 +15,7 @@ end
 function googleGen()
     global agtList
     global searchList
-    histDict::Dict{agtModule.agent,Array{Float64}}=Dict()
+    histDict::Dict{agentMod.agent,Array{Float64}}=Dict()
     for agt in agtList
         histDict[agt]=Float64[]
     end
@@ -29,12 +29,13 @@ function duckGen()
 end  
 
 
-function subsearch(agt::agtModule.agent,engine::Google,searchResolution::Int64,clickProb::Float64,time::Int64)
+function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,clickProb::Float64,time::Int64)
     # first, fit the agent's history 
-    bestdist::probType=Uniform()
+    bestdist::agentMod.probType=Uniform()
     U::Uniform=Uniform()
-    if length(engine.agentHistory) >= 30
-        bestDist=fit(Beta,engine.agentHistory)
+    if length(engine.agentHistory[agt]) >= 30
+        
+        bestDist=fit(Beta,engine.agentHistory[agt])
     else
         bestdist=Uniform()
     end
@@ -45,17 +46,18 @@ function subsearch(agt::agtModule.agent,engine::Google,searchResolution::Int64,c
     tick::Int64=0
     cum::Float64=0.0
     newRevenue::Int64=0
+    finGuess::Float64=0.0
     while true
         tick=tick+1
         guess::Float64=rand(bestdist,1)[1]
         if abs(guess-result) <= searchResolution
             # add this to the agent's history 
-            finGuess:Float64=guess
+            finGuess=guess
             # did the agent click on an ad?
             if rand(U,1)[1] <= clickProb
                 newRevenue=1
             end
-
+            #println("Flag")
             break
         else
             if guess > result
@@ -73,11 +75,9 @@ end
 
 
 
-function search(agt::agtModule.agent,engine::Google)
+function search(agt::agentMod.agent,engine::Google,time::Int64)
     global searchResolution
     # we need to know the probability of the agent clicking on an ad 
-    global clickProb
-    global time
     return subsearch(agt,engine,searchResolution,clickProb,time)
     
 end
