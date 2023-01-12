@@ -104,7 +104,7 @@ for agt in agtList
 end
 
 
-modTime::Int64=50
+modTime::Int64=100
 # now, for each tick 
 for time in 1:modTime
     # initialize Duck Duck Go if it is time
