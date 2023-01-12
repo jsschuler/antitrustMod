@@ -31,13 +31,15 @@ end
 
 function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,clickProb::Float64,time::Int64)
     # first, fit the agent's history 
-    bestdist::agentMod.probType=Uniform()
+    #println("Agent")
+    #println(agt.agtNum)
+    bestDist::agentMod.probType=Uniform()
     U::Uniform=Uniform()
     if length(engine.agentHistory[agt]) >= 30
-        
+        #println("Fitting")
         bestDist=fit(Beta,engine.agentHistory[agt])
     else
-        bestdist=Uniform()
+        bestDist=Uniform()
     end
     # now, begin the search process 
     # generate actual desired result
@@ -47,9 +49,20 @@ function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,
     cum::Float64=0.0
     newRevenue::Int64=0
     finGuess::Float64=0.0
+
+    maxGuess::Float64=1.0
+    minGuess::Float64=0.0
+
     while true
         tick=tick+1
-        guess::Float64=rand(bestdist,1)[1]
+        guess::Float64=rand(bestDist,1)[1]
+        #println("Tick")
+        #println(tick)
+        #println("Target")
+        #println(result)
+        #println("Guess")
+        #println(guess)
+        println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
         if abs(guess-result) <= searchResolution
             # add this to the agent's history 
             finGuess=guess
@@ -61,13 +74,16 @@ function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,
             break
         else
             if guess > result
-                # find out the quantile of the guess for the assumed distribution
-                cum=cdf(bestdist,guess)
-                guess=quantile(bestdist,rand(U,1)[1]*(1.0-cum)+cum)
+                # if the guess is too high then we replace the upper bound with the guess 
+                maxGuess=guess
             else
-                cum=cdf(bestdist,guess)
-                guess=quantile(bestdist,rand(U,1)[1]*(cum))
+                # if the guess is too low, we replace the upper bound with the guess 
+                minGuess=guess
             end
+            # find out the quantile of the guess for the assumed distribution
+            loGuess=cdf(bestDist,minGuess)
+            hiGuess=cdf(bestDist,maxGuess)
+            guess=quantile(bestDist,rand(U,1)[1]*(hiGuess-loGuess)+loGuess)
         end
     end
     return Any[agt.agtNum,tick,finGuess,newRevenue]
@@ -84,7 +100,7 @@ end
 
 function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Float64,clickProb::Float64,time::Int64)
     # first, fit the agent's history 
-    bestdist::agentMod.probType=Uniform()
+    bestDist::agentMod.probType=Uniform()
     U::Uniform=Uniform()
     # now, begin the search process 
     # generate actual desired result
@@ -96,7 +112,14 @@ function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Floa
     finGuess::Float64=0.0
     while true
         tick=tick+1
-        guess::Float64=rand(bestdist,1)[1]
+        guess::Float64=rand(bestDist,1)[1]
+        #println("Tick")
+        #println(tick)
+        #println("Target")
+        #println(result)
+        #println("Guess")
+        #println(guess)
+        println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
         if abs(guess-result) <= searchResolution
             # add this to the agent's history 
             finGuess=guess
@@ -108,13 +131,16 @@ function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Floa
             break
         else
             if guess > result
-                # find out the quantile of the guess for the assumed distribution
-                cum=cdf(bestdist,guess)
-                guess=quantile(bestdist,rand(U,1)[1]*(1.0-cum)+cum)
+                # if the guess is too high then we replace the upper bound with the guess 
+                maxGuess=guess
             else
-                cum=cdf(bestdist,guess)
-                guess=quantile(bestdist,rand(U,1)[1]*(cum))
+                # if the guess is too low, we replace the upper bound with the guess 
+                minGuess=guess
             end
+            # find out the quantile of the guess for the assumed distribution
+            loGuess=cdf(bestDist,minGuess)
+            hiGuess=cdf(bestDist,maxGuess)
+            guess=quantile(bestDist,rand(U,1)[1]*(hiGuess-loGuess)+loGuess)
         end
     end
     return Any[agt.agtNum,tick,finGuess,newRevenue]

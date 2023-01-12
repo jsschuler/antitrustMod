@@ -198,8 +198,8 @@ for time in 1:modTime
         end
     end
 end
-#for agt in agtList
-#    println(agt.history)
-#end
+for agt in agtList
+    println(agt.history)
+end
 println(length(keys(searchList[1].revenue)))
 println(length(keys(searchList[2].revenue)))
