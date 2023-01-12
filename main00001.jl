@@ -81,8 +81,8 @@ agtList=load_object("myAgents.jld2")
 searchList=searchEngine[]
 # initialize Google 
 googleGen()
-println("All searches")
-println(length(searchList))
+#println("All searches")
+#println(length(searchList))
 # initialize search engine to Google for all agents 
 for agt in agtList
     agt.currEngine=searchList[1]
@@ -92,6 +92,14 @@ end
 modTime::Int64=1
 # now, for each tick 
 for time in 1:modTime
+    # initialize histories 
+    for agt in agtList
+        agt.history[time]=Int64[]
+    end
+
+    for engine in searchList
+        engine.revenue[time]=0
+    end
 # some Poisson number of agents try a different search engine if one is available. 
     if length(searchList) > 1
         switchAgents::Array{agentMod.agent}=sample(agtList,rand(poissonDist,1)[1],replace=false)
@@ -109,7 +117,7 @@ for time in 1:modTime
     timeVec::Array{Int64}=Int64[]
     for agt in agtList
         searchCount::Int64=100+rand(searchCountDist,1)[1]
-        println(searchCount)
+        #println(searchCount)
         for k in 1:searchCount
             #println("Searching")
             push!(searchAgtVector,agt)
@@ -120,15 +128,21 @@ for time in 1:modTime
     end
     # now run the parallel search process
     searchRes=pmap(search,searchAgtVector,engineList,timeVec)
-    println(searchRes)
+    #println(searchRes)
     # if they prefer it, they keep using it. 
     # now, compute results 
     for el in searchRes
-        # record agent's waiting time for utility purposes
-        el[1].history[time]=el[2]
-        # record the agent's history for the search engine 
-        el[1].currEngine.agentHistory=cat(el[1].currEngine.agentHistory,[el[3]],dims=1)
+        #Any[agt,tick,finGuess,newRevenue]
+        #update search history with agent if applicable 
+        agt=el[1]
+        tick=el[2]
+        finGuess=el[3]
+        newRevenue=el[4]
+        searchUpdate(agt.currEngine,agt,finGuess)
+        # update profit
+        agt.currEngine.revenue[time]=agt.currEngine.revenue[time]+newRevenue
+        # update agent's utility history
+        push!(agt.history[time],tick)
     end
 
-    # we track revenue and agent utility over time
 end

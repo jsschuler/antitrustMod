@@ -7,7 +7,7 @@ mutable struct Google <: searchEngine
 end 
 
 mutable struct DuckDuckGo <: searchEngine
-    #agentHistory::Dict{agent,Array{Float64}}
+    
     revenue::Dict{Int64,Int64}
 end 
 
@@ -25,7 +25,7 @@ end
 
 function duckGen()
     global searchList
-    push!(searchList,DuckDuckGo(Int64[]))
+    push!(searchList,DuckDuckGo(Dict{Int64,Int64}()))
 end  
 
 
@@ -81,3 +81,12 @@ function search(agt::agentMod.agent,engine::Google,time::Int64)
     return subsearch(agt,engine,searchResolution,clickProb,time)
     
 end
+
+# function to update search history
+function searchUpdate(engine::Google,agt::agentMod.agent,newHist::Float64)
+    push!(engine.agentHistory[agt],newHist)
+end
+
+function searchUpdate(engine::DuckDuckGo,agt::agentMod.agent,newHist::Float64)
+end
+
