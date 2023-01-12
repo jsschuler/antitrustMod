@@ -71,19 +71,21 @@ Random.seed!(123)
 #addprocs(16)
 #check(1)
 #pmap(check,[1])
-agtList=pmap(agentMod.agentGen,1:agtCnt,repeat([privacyBeta],agtCnt))
+#agtList=pmap(agentMod.agentGen,1:agtCnt,repeat([privacyBeta],agtCnt))
 # now generate a dictionary that points the agent number to the agent. 
+
+
+
+#println(agtList)
+# now save agents for later use
+#save_object("myAgents.jld2", agtList)
+# now try loading
+agtList=load_object("myAgents.jld2")
 
 agtDict::Dict{Int64,agentMod.agent}=Dict{Int64,agentMod.agent}()
 for agt in agtList
     agtDict[agt.agtNum]=agt
 end
-
-#println(agtList)
-# now save agents for later use
-save_object("myAgents.jld2", agtList)
-# now try loading
-#agtList=load_object("myAgents.jld2")
 #println(agtList)
 
 searchList=searchEngine[]
@@ -91,7 +93,7 @@ searchList=searchEngine[]
 googleGen()
 
 # now, at what time do we initialize Duck Duck Go?
-duckTime::Int64=20
+duckTime::Int64=5
 
 
 
@@ -104,7 +106,7 @@ for agt in agtList
 end
 
 
-modTime::Int64=100
+modTime::Int64=10
 # now, for each tick 
 for time in 1:modTime
     # initialize Duck Duck Go if it is time
@@ -122,6 +124,7 @@ for time in 1:modTime
     end
 # some Poisson number of agents try a different search engine if one is available. 
     if length(searchList) > 1
+        println("Switching at time: "*string(time))
         switchAgents::Array{agentMod.agent}=sample(agtList,rand(poissonDist,1)[1],replace=false)
         for agt in switchAgents
             # The agent chooses a search engine at randon aside from the one it is using 
@@ -147,11 +150,14 @@ for time in 1:modTime
         end    
     end
     # now run the parallel search process
+    println("Searching at time: "*string(time))
     searchRes=pmap(search,searchAgtVector,engineList,timeVec)
     #println(searchRes[1])
     # if they prefer it, they keep using it. 
     # now, compute results 
+    println("Updating at time: "*string(time))
     for el in searchRes
+
         #Any[agt,tick,finGuess,newRevenue]
         #update search history with agent if applicable 
         currAgt=agtDict[el[1]]
