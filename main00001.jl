@@ -24,6 +24,7 @@ using Distributed
 @everywhere using Distributions
 @everywhere using Plots
 @everywhere using JLD2
+@everywhere using Statistics
 #Random.seed!(1234)
 Random.seed!(123)
 
@@ -70,28 +71,47 @@ Random.seed!(123)
 #addprocs(16)
 #check(1)
 #pmap(check,[1])
-#agtList=pmap(agentMod.agentGen,repeat([privacyBeta],agtCnt))
+agtList=pmap(agentMod.agentGen,1:agtCnt,repeat([privacyBeta],agtCnt))
+# now generate a dictionary that points the agent number to the agent. 
+
+agtDict::Dict{Int64,agentMod.agent}=Dict{Int64,agentMod.agent}()
+for agt in agtList
+    agtDict[agt.agtNum]=agt
+end
+
 #println(agtList)
 # now save agents for later use
-#save_object("myAgents.jld2", agtList)
+save_object("myAgents.jld2", agtList)
 # now try loading
-agtList=load_object("myAgents.jld2")
+#agtList=load_object("myAgents.jld2")
 #println(agtList)
 
 searchList=searchEngine[]
 # initialize Google 
 googleGen()
+
+# now, at what time do we initialize Duck Duck Go?
+duckTime::Int64=20
+
+
+
 #println("All searches")
 #println(length(searchList))
 # initialize search engine to Google for all agents 
 for agt in agtList
     agt.currEngine=searchList[1]
+    agt.prevEngine=searchList[1]
 end
 
 
-modTime::Int64=1
+modTime::Int64=50
 # now, for each tick 
 for time in 1:modTime
+    # initialize Duck Duck Go if it is time
+    if time==duckTime
+        duckGen()
+    end
+
     # initialize histories 
     for agt in agtList
         agt.history[time]=Int64[]
@@ -128,21 +148,52 @@ for time in 1:modTime
     end
     # now run the parallel search process
     searchRes=pmap(search,searchAgtVector,engineList,timeVec)
-    #println(searchRes)
+    #println(searchRes[1])
     # if they prefer it, they keep using it. 
     # now, compute results 
     for el in searchRes
         #Any[agt,tick,finGuess,newRevenue]
         #update search history with agent if applicable 
-        agt=el[1]
+        currAgt=agtDict[el[1]]
         tick=el[2]
         finGuess=el[3]
         newRevenue=el[4]
-        searchUpdate(agt.currEngine,agt,finGuess)
+        searchUpdate(currAgt.currEngine,currAgt,finGuess)
         # update profit
-        agt.currEngine.revenue[time]=agt.currEngine.revenue[time]+newRevenue
+        currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
         # update agent's utility history
-        push!(agt.history[time],tick)
+        #println("time")
+        #println(time)
+        #println("tick")
+        #println(tick)
+        #println("Agent")
+        #println(currAgt.agtNum)
+        #println("Before History")
+        #println(currAgt.history[time])
+        
+        push!(currAgt.history[time],tick)
+        #println("After History")
+        #println(currAgt.history[time])
     end
 
+    # now agents decide whether to keep their new search engine 
+    for agt in agtList
+        #println(agt.currEngine)
+        #println(agt.prevEngine)
+        #println(agt.currEngine != agt.prevEngine)
+        if agt.currEngine != agt.prevEngine
+            # does the agent prefer its current engine?
+            #println(time)
+            if agentMod.util(agt,mean(agt.history[time])) > agentMod.util(agt,mean(agt.history[time-1]))
+                agt.prevEngine=agt.currEngine
+            else 
+                agt.currEngine=agt.prevEngine
+            end
+        end
+    end
 end
+#for agt in agtList
+#    println(agt.history)
+#end
+println(length(keys(searchList[1].revenue)))
+println(length(keys(searchList[2].revenue)))

@@ -70,7 +70,7 @@ function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,
             end
         end
     end
-    return Any[agt,tick,finGuess,newRevenue]
+    return Any[agt.agtNum,tick,finGuess,newRevenue]
 end
 
 
@@ -81,6 +81,52 @@ function search(agt::agentMod.agent,engine::Google,time::Int64)
     return subsearch(agt,engine,searchResolution,clickProb,time)
     
 end
+
+function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Float64,clickProb::Float64,time::Int64)
+    # first, fit the agent's history 
+    bestdist::agentMod.probType=Uniform()
+    U::Uniform=Uniform()
+    # now, begin the search process 
+    # generate actual desired result
+    result::Float64=rand(agt.betaObj,1)[1]
+    # now prepare the loop
+    tick::Int64=0
+    cum::Float64=0.0
+    newRevenue::Int64=0
+    finGuess::Float64=0.0
+    while true
+        tick=tick+1
+        guess::Float64=rand(bestdist,1)[1]
+        if abs(guess-result) <= searchResolution
+            # add this to the agent's history 
+            finGuess=guess
+            # did the agent click on an ad?
+            if rand(U,1)[1] <= clickProb
+                newRevenue=1
+            end
+            #println("Flag")
+            break
+        else
+            if guess > result
+                # find out the quantile of the guess for the assumed distribution
+                cum=cdf(bestdist,guess)
+                guess=quantile(bestdist,rand(U,1)[1]*(1.0-cum)+cum)
+            else
+                cum=cdf(bestdist,guess)
+                guess=quantile(bestdist,rand(U,1)[1]*(cum))
+            end
+        end
+    end
+    return Any[agt.agtNum,tick,finGuess,newRevenue]
+end
+
+function search(agt::agentMod.agent,engine::DuckDuckGo,time::Int64)
+    global searchResolution
+    # we need to know the probability of the agent clicking on an ad 
+    return subsearch(agt,engine,searchResolution,clickProb,time)
+    
+end
+
 
 # function to update search history
 function searchUpdate(engine::Google,agt::agentMod.agent,newHist::Float64)

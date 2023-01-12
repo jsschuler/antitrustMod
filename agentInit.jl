@@ -12,6 +12,7 @@ module agentMod
     probType=Union{Uniform{Float64},Beta{Float64}}
     # we need a basic agent object
     mutable struct agent
+        agtNum::Int64
         privacy::Float64
         betaObj::Beta{Float64}
         gammaObj::Gamma{Float64}
@@ -21,6 +22,7 @@ module agentMod
         history::Dict{Int64,Array{Int64}}
         currEngine::Any
         prevEngine::Any
+        
     end
     # for convenience, we need an agent object we can send off to parallel processes
     struct parAgent
@@ -76,7 +78,7 @@ module agentMod
         end 
 
 
-    function agentGen(privacyBeta::Beta{Float64})
+    function agentGen(agtNum::Int64,privacyBeta::Beta{Float64})
         # generate privacy preference
         #global 
         privacy::Float64=rand(privacyBeta,1)[1]
@@ -107,7 +109,7 @@ module agentMod
         gammaK::Float64=blissPoint+1
         agtUtil=Gamma(gammaK,1)
         #push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
-        return agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),nothing,nothing)
+        return agent(agtNum,privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),nothing,nothing)
     end   
 
     # now, we need a utility function for the agent
