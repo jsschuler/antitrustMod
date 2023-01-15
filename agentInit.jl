@@ -109,7 +109,9 @@ module agentMod
         gammaK::Float64=blissPoint+1
         agtUtil=Gamma(gammaK,1)
         #push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
+        #println(typeof(key))
         return agent(agtNum,privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),nothing,nothing)
+
     end   
 
     # now, we need a utility function for the agent

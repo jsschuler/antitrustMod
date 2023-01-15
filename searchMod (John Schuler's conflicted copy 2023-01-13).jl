@@ -62,7 +62,7 @@ function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,
         #println(result)
         #println("Guess")
         #println(guess)
-        #println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
+        println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
         if abs(guess-result) <= searchResolution
             # add this to the agent's history 
             finGuess=guess
@@ -110,8 +110,6 @@ function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Floa
     cum::Float64=0.0
     newRevenue::Int64=0
     finGuess::Float64=0.0
-    maxGuess::Float64=1.0
-    minGuess::Float64=0.0
     while true
         tick=tick+1
         guess::Float64=rand(bestDist,1)[1]
@@ -121,7 +119,7 @@ function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Floa
         #println(result)
         #println("Guess")
         #println(guess)
-        #println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
+        println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
         if abs(guess-result) <= searchResolution
             # add this to the agent's history 
             finGuess=guess
@@ -145,12 +143,6 @@ function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Floa
             guess=quantile(bestDist,rand(U,1)[1]*(hiGuess-loGuess)+loGuess)
         end
     end
-    df=DataFrame(agt=[agt.agtNum],
-    ticks=[tick],
-    newRevenues=[newRevenue]
-    )
-    #println(typeof(key))
-    CSV.write("Data6/agents"*key*".csv", df,header = false,append=true)
     return Any[agt.agtNum,tick,finGuess,newRevenue]
 end
 

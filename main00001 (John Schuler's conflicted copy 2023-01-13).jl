@@ -25,18 +25,40 @@ using Distributed
 @everywhere using Plots
 @everywhere using JLD2
 @everywhere using Statistics
-using DataFrames
-using CSV
 #Random.seed!(1234)
-#Random.seed!(123)
+Random.seed!(123)
 
 @everywhere include("globals.jl")
 @everywhere include("agentInit.jl")
 #include("objects.jl")
 #include("functions.jl")
 @everywhere include("searchMod.jl")
+# test functions
+#alphaTest=alphaGen(.4,10.0)
+#alphaTest=alphaGen(.2,5.0)
+#alphaTest=alphaGen(.9,1.3)
 
 
+
+#agentMod.agentGen(privacyBeta)
+
+#println(util(agtList[1],3.0))
+#println(util(agtList[1],13.0))
+#println(util(agtList[1],agtList[1].blissPoint-.05))
+#println(util(agtList[1],agtList[1].blissPoint))
+#println(util(agtList[1],agtList[1].blissPoint+0.05))
+
+#searchList=searchEngine[]
+#time=1
+#googleGen()
+#duckGen()
+#println(typeof(searchList[1]))
+#println(fieldnames(Google))
+#searchList[1].revenue[time]=0
+#for t in 1:1000
+#    search(agtList[1],searchList[1])
+#end
+#println(searchList[1].revenue)
 
 # now it is time to build the main model 
 
@@ -46,7 +68,15 @@ using CSV
 #    agentGen()
 #end
 
+#addprocs(16)
+#check(1)
+#pmap(check,[1])
+#agtList=pmap(agentMod.agentGen,1:agtCnt,repeat([privacyBeta],agtCnt))
+# now generate a dictionary that points the agent number to the agent. 
 
+
+
+#println(agtList)
 # now save agents for later use
 #save_object("myAgents.jld2", agtList)
 # now try loading
@@ -108,12 +138,6 @@ for time in 1:modTime
     searchAgtVector::Array{agentMod.agent}=agentMod.agent[]
     engineList::Array{searchEngine}=searchEngine[]
     timeVec::Array{Int64}=Int64[]
-
-
-    searchAgtVector=agentMod.agent[]
-    engineList=searchEngine[]
-    timeVec=Int64[]
-    searchRes=[]
     for agt in agtList
         searchCount::Int64=100+rand(searchCountDist,1)[1]
         #println(searchCount)
@@ -122,12 +146,12 @@ for time in 1:modTime
             push!(searchAgtVector,agt)
             push!(engineList,agt.currEngine)
             push!(timeVec,time)
-            push!(searchRes,search(agt,agt.currEngine,time))
+            #println(search(agt,agt.currEngine,time))
         end    
     end
     # now run the parallel search process
-    #println("Searching at time: "*string(time))
-    #searchRes=pmap(search,searchAgtVector,engineList,timeVec)
+    println("Searching at time: "*string(time))
+    searchRes=pmap(search,searchAgtVector,engineList,timeVec)
     #println(searchRes[1])
     # if they prefer it, they keep using it. 
     # now, compute results 
