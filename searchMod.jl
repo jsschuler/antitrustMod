@@ -7,7 +7,6 @@ mutable struct Google <: searchEngine
 end 
 
 mutable struct DuckDuckGo <: searchEngine
-    
     revenue::Dict{Int64,Int64}
 end 
 
