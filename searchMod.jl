@@ -11,7 +11,6 @@ mutable struct DuckDuckGo <: searchEngine
     revenue::Dict{Int64,Int64}
 end 
 
-
 function googleGen()
     global agtList
     global searchList
