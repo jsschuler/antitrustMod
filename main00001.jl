@@ -79,7 +79,7 @@ end
 
 for mod in 1:modRuns
     # seed new seed
-    set.seed(modSeeds[mod])
+    Random.seed!(modSeeds[mod])
     # now, for each tick 
     for time in 1:modTime
         # initialize Duck Duck Go if it is time
