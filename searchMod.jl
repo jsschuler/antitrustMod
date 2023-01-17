@@ -143,12 +143,7 @@ function subsearch(agt::agentMod.agent,engine::DuckDuckGo,searchResolution::Floa
             guess=quantile(bestDist,rand(U,1)[1]*(hiGuess-loGuess)+loGuess)
         end
     end
-    df=DataFrame(agt=[agt.agtNum],
-    ticks=[tick],
-    newRevenues=[newRevenue]
-    )
-    #println(typeof(key))
-    CSV.write("Data6/agents"*key*".csv", df,header = false,append=true)
+    
     return Any[agt.agtNum,tick,finGuess,newRevenue]
 end
 

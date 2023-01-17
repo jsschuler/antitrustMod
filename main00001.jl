@@ -46,7 +46,7 @@ include("searchMod.jl")
 # Step 0: Initialize all agents, Initialize Google and set the tick on which Duck Duck Go will enter 
 agtList=agentMod.agent[]
 for i in 1:agtCnt
-    agentMod.agentGen(i,privacyBeta)
+    push!(agtList,agentMod.agentGen(i,privacyBeta))
 end
 
 
@@ -91,14 +91,14 @@ for mod in 1:modRuns
         for agt in agtList
             agt.history[time]=Int64[]
         end
-
+        global searchList
         for engine in searchList
             engine.revenue[time]=0
         end
-    # some Poisson number of agents try a different search engine if one is available. 
+        # some Poisson number of agents try a different search engine if one is available. 
         if length(searchList) > 1
-            println("Switching at time: "*string(time))
-            switchAgents::Array{agentMod.agent}=sample(agtList,rand(poissonDist,1)[1],replace=false)
+            #println("Switching at time: "*string(time))
+            switchAgents::Array{agentMod.agent}=sample(agtList,min(rand(poissonDist,1)[1],length(agtList)),replace=false)
             for agt in switchAgents
                 # The agent chooses a search engine at randon aside from the one it is using 
                 choices::searchEngine=sample(collect(setdiff(Set(searchList),Set([agt.currEngine]))),1)[1]
@@ -134,7 +134,7 @@ for mod in 1:modRuns
         #println(searchRes[1])
         # if they prefer it, they keep using it. 
         # now, compute results 
-        println("Updating at time: "*string(time))
+        #println("Updating at time: "*string(time))
         for el in searchRes
 
             #Any[agt,tick,finGuess,newRevenue]
@@ -178,7 +178,7 @@ for mod in 1:modRuns
         end
     end
     # report all data and reset
-    repFrame=DateFrame()
+    repFrame=DataFrame()
     agtSeedVec=Int64[]
     eventSeedVec=Int64[]
     tVec=Int64[]
@@ -199,6 +199,8 @@ for mod in 1:modRuns
         repFrame[!,"time"]=tVec
         repFrame[!,"history"]=hVec
         repFrame[!,"engine"]=searchVec
+        println("Test")
+        println(repFrame)
         if any(readdir().=="modOutput.csv") 
             CSV.write("modOutput.csv", repFrame,header = false,append=true)
         else 
@@ -215,6 +217,7 @@ for mod in 1:modRuns
     end 
 
     # Remove DuckDuckGo
+    global searchList
     searchList=searchList[1:1]
 end
 #for agt in agtList
