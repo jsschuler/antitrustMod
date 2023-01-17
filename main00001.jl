@@ -44,9 +44,9 @@ include("searchMod.jl")
 # now it is time to build the main model 
 
 # Step 0: Initialize all agents, Initialize Google and set the tick on which Duck Duck Go will enter 
-agtList=agent[]
+agtList=agentMod.agent[]
 for i in 1:agtCnt
-    agentGen()
+    agentMod.agentGen(i,privacyBeta)
 end
 
 
@@ -198,7 +198,7 @@ for mod in 1:modRuns
         repFrame[!,"agtNum"]=agtNumVec
         repFrame[!,"time"]=tVec
         repFrame[!,"history"]=hVec
-        repFrame[!,"engine"]=searchVec       
+        repFrame[!,"engine"]=searchVec
         if any(readdir().=="modOutput.csv") 
             CSV.write("modOutput.csv", repFrame,header = false,append=true)
         else 
@@ -212,8 +212,10 @@ for mod in 1:modRuns
 
     for engine in searchList
         engine.revenue=Dict{Int64,Int64}()
+    end 
 
-    # reseat agents and search engines 
+    # Remove DuckDuckGo
+    searchList=searchList[1:1]
 end
 #for agt in agtList
 #    println(agt.history)
