@@ -2,11 +2,11 @@
 # what is the probability that a random successful search results in an ad being clicked on?
 clickProb::Float64=0.5
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
-agtCnt=100
+agtCnt=1000
 # how many times to run the model?
 modRuns=10
 # how many ticks for each model run?
-modTime::Int64=50
+modTime::Int64=100
 # when does DuckDuckGo enter?
 duckTime::Int64=20
 

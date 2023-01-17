@@ -181,35 +181,45 @@ for mod in 1:modRuns
     repFrame=DataFrame()
     agtSeedVec=Int64[]
     eventSeedVec=Int64[]
+    agtNumVec=Int64[]
     tVec=Int64[]
     hVec=Int64[]
     searchVec=[]
     for agt in agtList
         for timer in keys(agt.history)
-            agtSeedVec=cat(agtSeedVec,repeat([agtSeedVec],length(agt.history[timer])),dims=1)
-            eventSeedVec=cat(eventSeedVec,repeat([modSeeds],length(agt.history[timer])),dims=1)
-            agtNumVec=cat(repeat([agt.agtNum],length(agt.history[timer])),dims=1)
+            agtSeedVec=cat(agtSeedVec,repeat([agtSeed],length(agt.history[timer])),dims=1)
+            eventSeedVec=cat(eventSeedVec,repeat([modSeeds[mod]],length(agt.history[timer])),dims=1)
+            agtNumVec=cat(agtNumVec,repeat([agt.agtNum],length(agt.history[timer])),dims=1)
             tVec=cat(tVec,repeat([timer],length(agt.history[timer])),dims=1)
             hVec=cat(hVec,agt.history[timer],dims=1)
             searchVec=cat(searchVec,repeat([string(typeof(agt.currEngine))],length(agt.history[timer])),dims=1)
         end
-        repFrame[!,"agtSeed"]=agtSeedVec
-        repFrame[!,"modSeed"]=eventSeedVec
-        repFrame[!,"agtNum"]=agtNumVec
-        repFrame[!,"time"]=tVec
-        repFrame[!,"history"]=hVec
-        repFrame[!,"engine"]=searchVec
-        println("Test")
-        println(repFrame)
-        if any(readdir().=="modOutput.csv") 
-            CSV.write("modOutput.csv", repFrame,header = false,append=true)
-        else 
-            CSV.write("modOutput.csv", repFrame,header = true,append=false)
-        end
+    end 
+    #println(length(agtSeedVec))
+    #println(length(eventSeedVec))
+    #println(length(agtNumVec))
+    #println(length(tVec))
+    #println(length(hVec))
+    #println(length(searchVec))
+    
+    repFrame[!,"agtSeed"]=agtSeedVec
+    repFrame[!,"modSeed"]=eventSeedVec
+    repFrame[!,"agtNum"]=agtNumVec
+    repFrame[!,"time"]=tVec
+    repFrame[!,"history"]=hVec
+    repFrame[!,"engine"]=searchVec
+    #println("Test")
+    #println(repFrame)
+    #if any(readdir().=="modOutput.csv") 
+    #    CSV.write("modOutput.csv", repFrame,header = false,append=true)
+    #else 
+    #    CSV.write("modOutput.csv", repFrame,header = true,append=false)
+    #end
+    for agt in agtList    
         agt.history=Dict{Int64,Int64}()
         agt.currEngine=searchList[1]
         agt.prevEngine=searchList[1]
-        histDict[agt]=Float64[]
+        searchList[1].agentHistory[agt]=Float64[]
     end
 
     for engine in searchList
