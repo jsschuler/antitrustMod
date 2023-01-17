@@ -2,7 +2,14 @@
 # what is the probability that a random successful search results in an ad being clicked on?
 clickProb::Float64=0.5
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
-agtCnt=10
+agtCnt=100
+# how many times to run the model?
+modRuns=10
+# how many ticks for each model run?
+modTime::Int64=50
+# when does DuckDuckGo enter?
+duckTime::Int64=20
+
 # now, we need to generate the parameters for the agent's interests
 # represented by beta distributions. 
 # we parameterize the beta distribution by its mode. Given a mode, the two 
@@ -22,3 +29,6 @@ switchPct::Float64=.1
 poissonDist::Poisson{Float64}=Poisson(switchPct*agtCnt)
 # and a probability distribution for how much agents search 
 searchCountDist::NegativeBinomial{Float64}=NegativeBinomial(1.0,.1)
+# now set the agent generatio  key 
+agtSeed::Int64=rand(DiscreteUniform(1,10000),1)[1]
+Random.seed!(agtSeed)
