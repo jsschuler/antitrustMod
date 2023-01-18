@@ -79,9 +79,11 @@ end
 
 for mod in 1:modRuns
     # seed new seed
+    println("mod is"*string(mod))
     Random.seed!(modSeeds[mod])
     # now, for each tick 
     for time in 1:modTime
+        println("tick is"*string(time))
         # initialize Duck Duck Go if it is time
         if time==duckTime
             duckGen()
@@ -97,7 +99,7 @@ for mod in 1:modRuns
         end
         # some Poisson number of agents try a different search engine if one is available. 
         if length(searchList) > 1
-            #println("Switching at time: "*string(time))
+            println("Switching at time: "*string(time))
             switchAgents::Array{agentMod.agent}=sample(agtList,min(rand(poissonDist,1)[1],length(agtList)),replace=false)
             for agt in switchAgents
                 # The agent chooses a search engine at randon aside from the one it is using 
@@ -119,9 +121,9 @@ for mod in 1:modRuns
         searchRes=[]
         for agt in agtList
             searchCount::Int64=100+rand(searchCountDist,1)[1]
-            #println(searchCount)
+            println("Agent: "*string(agt.agtNum)*" is searching")
             for k in 1:searchCount
-                #println("Searching")
+                println("Agent: "*string(agt.agtNum)*" is searching for the "*string(k)*"th time")
                 push!(searchAgtVector,agt)
                 push!(engineList,agt.currEngine)
                 push!(timeVec,time)
@@ -135,6 +137,15 @@ for mod in 1:modRuns
         # if they prefer it, they keep using it. 
         # now, compute results 
         #println("Updating at time: "*string(time))
+
+        outPut=DataFrame()
+        agtSeecVec=Int64[]
+        runSeedVec=Int64[]
+        modList=Int64[]
+        timeList=Int64[]
+        agtVec=Int64[]
+        agtTicks=Int64[]
+        engineVec=String[]
         for el in searchRes
 
             #Any[agt,tick,finGuess,newRevenue]
@@ -147,6 +158,7 @@ for mod in 1:modRuns
             # update profit
             currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
             # update agent's utility history
+            println("Agent: "*string(currAgt.agtNum)*" is updating")
             #println("time")
             #println(time)
             #println("tick")
@@ -159,7 +171,29 @@ for mod in 1:modRuns
             push!(currAgt.history[time],tick)
             #println("After History")
             #println(currAgt.history[time])
+            global agtSeed
+            push!(agtSeecVec,agtSeed)
+            global modSeeds
+            push!(runSeedVec,modSeeds[mod])
+            push!(modList,mod)
+            push!(timeList,time)
+            push!(agtVec,currAgt.agtNum)
+            push!(agtTicks,tick)
+            push!(engineVec,string(typeof(currAgt.currEngine)))
         end
+        outPut[!,"agtSeed"]=agtSeecVec
+        outPut[!,"runSeed"]=runSeedVec
+        outPut[!,"mod"]=modList
+        outPut[!,"time"]=timeList
+        outPut[!,"agtNum"]=agtVec
+        outPut[!,"ticks"]=agtTicks
+        outPut[!,"searchEngine"]=engineVec
+        if any(readdir().=="modOutput.csv") 
+            CSV.write("modOutput.csv", outPut,header = false,append=true)
+        else 
+            CSV.write("modOutput.csv", outPut,header = true,append=false)
+        end
+
 
         # now agents decide whether to keep their new search engine 
         for agt in agtList
@@ -178,6 +212,7 @@ for mod in 1:modRuns
         end
     end
     # report all data and reset
+    println("Resetting")
     repFrame=DataFrame()
     agtSeedVec=Int64[]
     eventSeedVec=Int64[]
@@ -185,36 +220,8 @@ for mod in 1:modRuns
     tVec=Int64[]
     hVec=Int64[]
     searchVec=[]
-    for agt in agtList
-        for timer in keys(agt.history)
-            agtSeedVec=cat(agtSeedVec,repeat([agtSeed],length(agt.history[timer])),dims=1)
-            eventSeedVec=cat(eventSeedVec,repeat([modSeeds[mod]],length(agt.history[timer])),dims=1)
-            agtNumVec=cat(agtNumVec,repeat([agt.agtNum],length(agt.history[timer])),dims=1)
-            tVec=cat(tVec,repeat([timer],length(agt.history[timer])),dims=1)
-            hVec=cat(hVec,agt.history[timer],dims=1)
-            searchVec=cat(searchVec,repeat([string(typeof(agt.currEngine))],length(agt.history[timer])),dims=1)
-        end
-    end 
-    #println(length(agtSeedVec))
-    #println(length(eventSeedVec))
-    #println(length(agtNumVec))
-    #println(length(tVec))
-    #println(length(hVec))
-    #println(length(searchVec))
-    
-    repFrame[!,"agtSeed"]=agtSeedVec
-    repFrame[!,"modSeed"]=eventSeedVec
-    repFrame[!,"agtNum"]=agtNumVec
-    repFrame[!,"time"]=tVec
-    repFrame[!,"history"]=hVec
-    repFrame[!,"engine"]=searchVec
-    #println("Test")
-    #println(repFrame)
-    #if any(readdir().=="modOutput.csv") 
-    #    CSV.write("modOutput.csv", repFrame,header = false,append=true)
-    #else 
-    #    CSV.write("modOutput.csv", repFrame,header = true,append=false)
-    #end
+
+
     for agt in agtList    
         agt.history=Dict{Int64,Int64}()
         agt.currEngine=searchList[1]

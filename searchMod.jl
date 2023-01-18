@@ -158,6 +158,11 @@ end
 # function to update search history
 function searchUpdate(engine::Google,agt::agentMod.agent,newHist::Float64)
     push!(engine.agentHistory[agt],newHist)
+    # to save computational time, cut off data at 1000 observations
+    if length(engine.agentHistory[agt]) > 1000
+        engine.agentHistory[agt]=engine.agentHistory[agt][(length(engine.agentHistory[agt])-1000):length(engine.agentHistory[agt])]
+    end
+
 end
 
 function searchUpdate(engine::DuckDuckGo,agt::agentMod.agent,newHist::Float64)
