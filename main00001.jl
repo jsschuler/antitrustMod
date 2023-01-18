@@ -99,7 +99,7 @@ for mod in 1:modRuns
         end
         # some Poisson number of agents try a different search engine if one is available. 
         if length(searchList) > 1
-            println("Switching at time: "*string(time))
+            #println("Switching at time: "*string(time))
             switchAgents::Array{agentMod.agent}=sample(agtList,min(rand(poissonDist,1)[1],length(agtList)),replace=false)
             for agt in switchAgents
                 # The agent chooses a search engine at randon aside from the one it is using 
@@ -123,7 +123,7 @@ for mod in 1:modRuns
             searchCount::Int64=100+rand(searchCountDist,1)[1]
             println("Agent: "*string(agt.agtNum)*" is searching")
             for k in 1:searchCount
-                println("Agent: "*string(agt.agtNum)*" is searching for the "*string(k)*"th time")
+                #println("Agent: "*string(agt.agtNum)*" is searching for the "*string(k)*"th time")
                 push!(searchAgtVector,agt)
                 push!(engineList,agt.currEngine)
                 push!(timeVec,time)
@@ -158,7 +158,7 @@ for mod in 1:modRuns
             # update profit
             currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
             # update agent's utility history
-            println("Agent: "*string(currAgt.agtNum)*" is updating")
+            #println("Agent: "*string(currAgt.agtNum)*" is updating")
             #println("time")
             #println(time)
             #println("tick")
