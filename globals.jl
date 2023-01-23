@@ -4,7 +4,7 @@ clickProb::Float64=0.5
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
 agtCnt=1000
 # how many times to run the model?
-modRuns=10
+modRuns=20
 # how many ticks for each model run?
 modTime::Int64=50
 # when does DuckDuckGo enter?

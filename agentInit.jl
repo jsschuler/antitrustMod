@@ -19,7 +19,7 @@ module agentMod
         expUnif::Float64
         expSubj::Float64
         blissPoint::Float64
-        history::Dict{Int64,Array{Int64}}
+        history::Dict{Int64,Float64}
         currEngine::Any
         prevEngine::Any
         

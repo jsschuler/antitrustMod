@@ -27,7 +27,7 @@ using JLD2
 using Statistics
 using DataFrames
 using CSV
-
+using StatsBase
 
 
 
@@ -76,6 +76,15 @@ for agt in agtList
     agt.currEngine=searchList[1]
     agt.prevEngine=searchList[1]
 end
+outPut=DataFrame()
+agtSeecVec=Int64[]
+runSeedVec=Int64[]
+modList=Int64[]
+timeList=Int64[]
+agtVec=Int64[]
+agtTicks=Float64[]
+engineVec=String[]
+
 
 for mod in 1:modRuns
     # seed new seed
@@ -90,9 +99,9 @@ for mod in 1:modRuns
         end
 
         # initialize histories 
-        for agt in agtList
-            agt.history[time]=Int64[]
-        end
+        #for agt in agtList
+        #    agt.history[time]=0.0
+        #end
         global searchList
         for engine in searchList
             engine.revenue[time]=0
@@ -118,17 +127,42 @@ for mod in 1:modRuns
         searchAgtVector=agentMod.agent[]
         engineList=searchEngine[]
         timeVec=Int64[]
-        searchRes=[]
+        searchRes=Float64[]
+
         for agt in agtList
             searchCount::Int64=100+rand(searchCountDist,1)[1]
             println("Agent: "*string(agt.agtNum)*" is searching")
+            allTicks=Int64[]
             for k in 1:searchCount
                 #println("Agent: "*string(agt.agtNum)*" is searching for the "*string(k)*"th time")
-                push!(searchAgtVector,agt)
-                push!(engineList,agt.currEngine)
-                push!(timeVec,time)
-                push!(searchRes,search(agt,agt.currEngine,time))
+                searchRes=search(agt,agt.currEngine,time)
+                currAgt=agtDict[searchRes[1]]
+                # save ticks
+                push!(allTicks,searchRes[2])
+                #push!(agt.history[time],tick)
+                finGuess=searchRes[3]
+                newRevenue=searchRes[4]
+                searchUpdate(currAgt.currEngine,currAgt,finGuess)
+                # update profit
+                currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
+
+
             end    
+            
+            #println("After History")
+            #println(currAgt.history[time])
+            global agtSeed
+            push!(agtSeecVec,agtSeed)
+            global modSeeds
+            push!(runSeedVec,modSeeds[mod])
+            push!(modList,mod)
+            push!(timeList,time)
+            push!(agtVec,agt.agtNum)
+            push!(agtTicks,mean(allTicks))
+            agt.history[time]=mean(allTicks)
+            push!(engineVec,string(typeof(agt.currEngine)))
+            
+
         end
         # now run the parallel search process
         #println("Searching at time: "*string(time))
@@ -138,49 +172,7 @@ for mod in 1:modRuns
         # now, compute results 
         #println("Updating at time: "*string(time))
 
-        outPut=DataFrame()
-        agtSeecVec=Int64[]
-        runSeedVec=Int64[]
-        modList=Int64[]
-        timeList=Int64[]
-        agtVec=Int64[]
-        agtTicks=Int64[]
-        engineVec=String[]
-        for el in searchRes
 
-            #Any[agt,tick,finGuess,newRevenue]
-            #update search history with agent if applicable 
-            currAgt=agtDict[el[1]]
-            tick=el[2]
-            finGuess=el[3]
-            newRevenue=el[4]
-            searchUpdate(currAgt.currEngine,currAgt,finGuess)
-            # update profit
-            currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
-            # update agent's utility history
-            #println("Agent: "*string(currAgt.agtNum)*" is updating")
-            #println("time")
-            #println(time)
-            #println("tick")
-            #println(tick)
-            #println("Agent")
-            #println(currAgt.agtNum)
-            #println("Before History")
-            #println(currAgt.history[time])
-
-            push!(currAgt.history[time],tick)
-            #println("After History")
-            #println(currAgt.history[time])
-            global agtSeed
-            push!(agtSeecVec,agtSeed)
-            global modSeeds
-            push!(runSeedVec,modSeeds[mod])
-            push!(modList,mod)
-            push!(timeList,time)
-            push!(agtVec,currAgt.agtNum)
-            push!(agtTicks,tick)
-            push!(engineVec,string(typeof(currAgt.currEngine)))
-        end
         outPut[!,"agtSeed"]=agtSeecVec
         outPut[!,"runSeed"]=runSeedVec
         outPut[!,"mod"]=modList
@@ -210,6 +202,7 @@ for mod in 1:modRuns
                 end
             end
         end
+        
     end
     # report all data and reset
     println("Resetting")
