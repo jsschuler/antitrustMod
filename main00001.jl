@@ -49,6 +49,15 @@ for i in 1:agtCnt
     push!(agtList,agentMod.agentGen(i,privacyBeta))
 end
 
+# we need a function that returns 99999.9 when there is a null mean 
+function safeMean(array::Any[])
+    if is.nan(mean(array)) 
+        return 99999999.9
+    else
+        return mean(array)
+    end
+end
+
 
 # now save agents for later use
 #save_object("myAgents.jld2", agtList)
@@ -82,8 +91,28 @@ runSeedVec=Int64[]
 modList=Int64[]
 timeList=Int64[]
 agtVec=Int64[]
-agtTicks=Float64[]
-engineVec=String[]
+
+googPct=Float64[]
+searchCnt=Int64[]
+
+q5 =Float64[]
+q25=Float64[]
+q50=Float64[]
+q75=Float64[]
+q95=Float64[]
+
+qG5 =Float64[]
+qG25=Float64[]
+qG50=Float64[]
+qG75=Float64[]
+qG95=Float64[]
+
+qD5 =Float64[]
+qD25=Float64[]
+qD50=Float64[]
+qD75=Float64[]
+qD95=Float64[]
+
 
 
 for mod in 1:modRuns
@@ -97,6 +126,9 @@ for mod in 1:modRuns
         if time==duckTime
             duckGen()
         end
+        agtTicks=Float64[]
+        googTicks=Float64[]
+        duckTicks=Float64[]
 
         # initialize histories 
         #for agt in agtList
@@ -120,12 +152,12 @@ for mod in 1:modRuns
         # all agents search 
 
         searchAgtVector::Array{agentMod.agent}=agentMod.agent[]
-        engineList::Array{searchEngine}=searchEngine[]
+        engineVec::Array{Bool}=Bool[]
         timeVec::Array{Int64}=Int64[]
 
 
         searchAgtVector=agentMod.agent[]
-        engineList=searchEngine[]
+        engineVec=Bool[]
         timeVec=Int64[]
         searchRes=Float64[]
 
@@ -133,37 +165,75 @@ for mod in 1:modRuns
             searchCount::Int64=100+rand(searchCountDist,1)[1]
             println("Agent: "*string(agt.agtNum)*" is searching")
             allTicks=Int64[]
+            gTicks=Int64[]
+            dTicks=Int64[]
             for k in 1:searchCount
                 #println("Agent: "*string(agt.agtNum)*" is searching for the "*string(k)*"th time")
                 searchRes=search(agt,agt.currEngine,time)
                 currAgt=agtDict[searchRes[1]]
                 # save ticks
                 push!(allTicks,searchRes[2])
+                if string(typeof(agt.currEngine))=="Google"
+                    push!(gTicks,searchRes[2])
+                else
+                    push!(dTicks,searchRes[2])
+                end
                 #push!(agt.history[time],tick)
                 finGuess=searchRes[3]
                 newRevenue=searchRes[4]
                 searchUpdate(currAgt.currEngine,currAgt,finGuess)
                 # update profit
                 currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
+                
 
 
             end    
             
             #println("After History")
             #println(currAgt.history[time])
-            global agtSeed
-            push!(agtSeecVec,agtSeed)
-            global modSeeds
-            push!(runSeedVec,modSeeds[mod])
-            push!(modList,mod)
-            push!(timeList,time)
-            push!(agtVec,agt.agtNum)
-            push!(agtTicks,mean(allTicks))
+
+            #push!(agtVec,agt.agtNum)
+            push!(agtTicks,safeMean(allTicks))
+            push!(googTicks,safeMean(gTicks))
+            push!(duckTicks,safeMean(dTicks))
+            
             agt.history[time]=mean(allTicks)
-            push!(engineVec,string(typeof(agt.currEngine)))
+            push!(engineVec,string(typeof(agt.currEngine))=="Google")
             
 
         end
+        global agtSeed
+        push!(agtSeecVec,agtSeed)
+        global modSeeds
+        push!(runSeedVec,modSeeds[mod])
+        push!(modList,mod)
+        push!(timeList,time)
+        # now get sums and quantiles at each time
+        push!(googPct,mean(engineVec))
+        push!(searchCnt,length(engineVec))
+        println("Debug")
+        println(agtTicks)
+        println(googTicks)
+        println(duckTicks)
+    
+        push!(q5, quantile(agtTicks,[.05])[1])
+        push!(q25,quantile(agtTicks,[.25])[1])
+        push!(q50,quantile(agtTicks,[.5])[1])
+        push!(q75,quantile(agtTicks,[.75])[1])
+        push!(q95,quantile(agtTicks,[.95])[1])
+    
+        push!(qG5, quantile(googTicks,[.05])[1])
+        push!(qG25,quantile(googTicks,[.25])[1])
+        push!(qG50,quantile(googTicks,[.5])[1])
+        push!(qG75,quantile(googTicks,[.75])[1])
+        push!(qG95,quantile(googTicks,[.95])[1])
+    
+        push!(qD5, quantile(duckTicks,[.05])[1])
+        push!(qD25,quantile(duckTicks,[.25])[1])
+        push!(qD50,quantile(duckTicks,[.5])[1])
+        push!(qD75,quantile(duckTicks,[.75])[1])
+        push!(qD95,quantile(duckTicks,[.95])[1])
+    
         # now run the parallel search process
         #println("Searching at time: "*string(time))
         #searchRes=pmap(search,searchAgtVector,engineList,timeVec)
@@ -177,9 +247,27 @@ for mod in 1:modRuns
         outPut[!,"runSeed"]=runSeedVec
         outPut[!,"mod"]=modList
         outPut[!,"time"]=timeList
-        outPut[!,"agtNum"]=agtVec
-        outPut[!,"ticks"]=agtTicks
-        outPut[!,"searchEngine"]=engineVec
+        outPut[!,"googPct"]=googPct
+        outPut[!,"searchCnt"]=searchCnt
+        
+        outPut[!,"g5"]= q5
+        outPut[!,"q25"]=q25
+        outPut[!,"q50"]=q50
+        outPut[!,"q75"]=q75
+        outPut[!,"q95"]=q95
+
+        outPut[!,"qG5"]= qG5
+        outPut[!,"qG25"]=qG25
+        outPut[!,"qG50"]=qG50
+        outPut[!,"qG75"]=qG75
+        outPut[!,"qG95"]=qG95
+
+        outPut[!,"qG5"]= qD5
+        outPut[!,"qG25"]=qD25
+        outPut[!,"qG50"]=qD50
+        outPut[!,"qG75"]=qD75
+        outPut[!,"qG95"]=qD95
+        
         if any(readdir().=="modOutput.csv") 
             CSV.write("modOutput.csv", outPut,header = false,append=true)
         else 
