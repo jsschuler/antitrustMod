@@ -268,10 +268,10 @@ for mod in 1:modRuns
         outPut[!,"qG75"]=qD75
         outPut[!,"qG95"]=qD95
         
-        if any(readdir().=="modOutput.csv") 
-            CSV.write("modOutput.csv", outPut,header = false,append=true)
+        if any(readdir("../Data").=="modOutput.csv") 
+            CSV.write("../Data/modOutput.csv", outPut,header = false,append=true)
         else 
-            CSV.write("modOutput.csv", outPut,header = true,append=false)
+            CSV.write("../Data/modOutput.csv", outPut,header = true,append=false)
         end
 
 
