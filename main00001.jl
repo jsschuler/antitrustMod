@@ -49,14 +49,6 @@ for i in 1:agtCnt
     push!(agtList,agentMod.agentGen(i,privacyBeta))
 end
 
-# we need a function that returns 99999.9 when there is a null mean 
-function safeMean(array::Any[])
-    if is.nan(mean(array)) 
-        return 99999999.9
-    else
-        return mean(array)
-    end
-end
 
 
 # now save agents for later use
@@ -164,9 +156,9 @@ for mod in 1:modRuns
         for agt in agtList
             searchCount::Int64=100+rand(searchCountDist,1)[1]
             println("Agent: "*string(agt.agtNum)*" is searching")
-            allTicks=Int64[]
-            gTicks=Int64[]
-            dTicks=Int64[]
+            allTicks=Int64[0]
+            gTicks=Int64[0]
+            dTicks=Int64[0]
             for k in 1:searchCount
                 #println("Agent: "*string(agt.agtNum)*" is searching for the "*string(k)*"th time")
                 searchRes=search(agt,agt.currEngine,time)
@@ -193,9 +185,9 @@ for mod in 1:modRuns
             #println(currAgt.history[time])
 
             #push!(agtVec,agt.agtNum)
-            push!(agtTicks,safeMean(allTicks))
-            push!(googTicks,safeMean(gTicks))
-            push!(duckTicks,safeMean(dTicks))
+            push!(agtTicks,mean(allTicks))
+            push!(googTicks,mean(gTicks))
+            push!(duckTicks,mean(dTicks))
             
             agt.history[time]=mean(allTicks)
             push!(engineVec,string(typeof(agt.currEngine))=="Google")
@@ -243,36 +235,7 @@ for mod in 1:modRuns
         #println("Updating at time: "*string(time))
 
 
-        outPut[!,"agtSeed"]=agtSeecVec
-        outPut[!,"runSeed"]=runSeedVec
-        outPut[!,"mod"]=modList
-        outPut[!,"time"]=timeList
-        outPut[!,"googPct"]=googPct
-        outPut[!,"searchCnt"]=searchCnt
-        
-        outPut[!,"g5"]= q5
-        outPut[!,"q25"]=q25
-        outPut[!,"q50"]=q50
-        outPut[!,"q75"]=q75
-        outPut[!,"q95"]=q95
 
-        outPut[!,"qG5"]= qG5
-        outPut[!,"qG25"]=qG25
-        outPut[!,"qG50"]=qG50
-        outPut[!,"qG75"]=qG75
-        outPut[!,"qG95"]=qG95
-
-        outPut[!,"qG5"]= qD5
-        outPut[!,"qG25"]=qD25
-        outPut[!,"qG50"]=qD50
-        outPut[!,"qG75"]=qD75
-        outPut[!,"qG95"]=qD95
-        
-        if any(readdir("../Data").=="modOutput.csv") 
-            CSV.write("../Data/modOutput.csv", outPut,header = false,append=true)
-        else 
-            CSV.write("../Data/modOutput.csv", outPut,header = true,append=false)
-        end
 
 
         # now agents decide whether to keep their new search engine 
@@ -291,6 +254,36 @@ for mod in 1:modRuns
             end
         end
         
+    end
+    outPut[!,"agtSeed"]=agtSeecVec
+    outPut[!,"runSeed"]=runSeedVec
+    outPut[!,"mod"]=modList
+    outPut[!,"time"]=timeList
+    outPut[!,"googPct"]=googPct
+    outPut[!,"searchCnt"]=searchCnt
+    
+    outPut[!,"g5"]= q5
+    outPut[!,"q25"]=q25
+    outPut[!,"q50"]=q50
+    outPut[!,"q75"]=q75
+    outPut[!,"q95"]=q95
+
+    outPut[!,"qG5"]= qG5
+    outPut[!,"qG25"]=qG25
+    outPut[!,"qG50"]=qG50
+    outPut[!,"qG75"]=qG75
+    outPut[!,"qG95"]=qG95
+
+    outPut[!,"qG5"]= qD5
+    outPut[!,"qG25"]=qD25
+    outPut[!,"qG50"]=qD50
+    outPut[!,"qG75"]=qD75
+    outPut[!,"qG95"]=qD95
+    
+    if any(readdir("../Data").=="modOutput.csv") 
+        CSV.write("../Data/modOutput.csv", outPut,header = false,append=true)
+    else 
+        CSV.write("../Data/modOutput.csv", outPut,header = true,append=false)
     end
     # report all data and reset
     println("Resetting")
@@ -322,4 +315,4 @@ end
 #    println(agt.history)
 #end
 #println(length(keys(searchList[1].revenue)))
-#println(length(keys(searchList[2].revenue)))
+#println(length(keys(searchList[2].revenue)))dTicks=Int64[0]

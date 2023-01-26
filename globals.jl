@@ -4,11 +4,11 @@ clickProb::Float64=0.5
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
 agtCnt=1000
 # how many times to run the model?
-modRuns=1
+modRuns=100
 # how many ticks for each model run?
-modTime::Int64=2
+modTime::Int64=50
 # when does DuckDuckGo enter?
-duckTime::Int64=10
+duckTime::Int64=25
 
 # now set the agent generation  key 
 agtSeed::Int64=rand(DiscreteUniform(1,10000),1)[1]
