@@ -176,18 +176,20 @@ for mod in 1:modRuns
                 searchUpdate(currAgt.currEngine,currAgt,finGuess)
                 # update profit
                 currAgt.currEngine.revenue[time]=currAgt.currEngine.revenue[time]+newRevenue
-                
-
-
             end    
-            
             #println("After History")
             #println(currAgt.history[time])
 
             #push!(agtVec,agt.agtNum)
-            push!(agtTicks,mean(allTicks))
-            push!(googTicks,mean(gTicks))
-            push!(duckTicks,mean(dTicks))
+            if  length(searchList) > 1
+                push!(agtTicks,mean(allTicks))
+                push!(googTicks,mean(gTicks))
+                push!(duckTicks,mean(dTicks))
+            else
+                push!(agtTicks,mean(allTicks))
+                push!(googTicks,mean(gTicks))
+                push!(duckTicks,0.0)
+            end
             
             agt.history[time]=mean(allTicks)
             push!(engineVec,string(typeof(agt.currEngine))=="Google")
