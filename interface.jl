@@ -33,10 +33,10 @@ using Interact
 using Blink
 import Colors
 using Plots
-#cd("/Users/johnschuler/Documents/Research/AntiTrust/Interface")
-include("../antitrustMod/globals.jl")
-include("../antitrustMod/agentInit.jl")
-include("../antitrustMod/searchMod.jl")
+
+include("globals.jl")
+include("agentInit.jl")
+include("searchMod.jl")
 
 agtCnt=100
 modelTicks=50
@@ -50,7 +50,7 @@ function interface()
     agentCount = slider(10:1:200, label = "Agent Count")
     allTicks =slider(1:1:100,label="Model Ticks")
     learningTicks = slider(0.0:.01:1.0, label = "Google Head Start")
-    genAgt=button("Run Model")
+    genAgt=button("Generate Agents")
     # store the agent count to the global variable
     
     agtCntSet=function(cnt)
@@ -125,7 +125,9 @@ end
 w = Window()
 body!(w, interface())
 waitTime()
-w = Window()
+
+# we need a function that says wait for agents
+
 # we need a function that displayes the agents 
 agtInterface=function()
     global agtList 
@@ -143,9 +145,9 @@ end
 agtList=agentMod.agent[]
 for i in 1:agtCnt
     push!(agtList,agentMod.agentGen(i,privacyBeta))
-    body!(w,agtInterface())
+    
 end
-
+body!(w,agtInterface())
 agtDict::Dict{Int64,agentMod.agent}=Dict{Int64,agentMod.agent}()
 for agt in agtList
     agtDict[agt.agtNum]=agt
