@@ -29,17 +29,9 @@ using DataFrames
 using CSV
 using StatsBase
 
-
-
 include("globals.jl")
 include("agentInit.jl")
-#include("objects.jl")
-#include("functions.jl")
 include("searchMod.jl")
-
-
-
-
 
 # now it is time to build the main model 
 
