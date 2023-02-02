@@ -254,41 +254,37 @@ duckPercentileTracker95=Float64[]
 
 # now, we display the end of tick report 
 function tickInterface(plotPop::Bool)
-    runButton=button("Start / Stop")
+    runButton=button("Start")
     runOnceButton=button("Run Once")
     runFunction=function(status)
         println("Run Status")
         println(status)
-        global ctrlList
+        global proceed
+        global secondaryHalt
         println("control")
         println(ctrlList)
-        push!(ctrlList,true)
-        if length(ctrlList)%2==1
-            global proceed
+        push!(ctrlList,status)
+        println("Max")
+        println(maximum(ctrlList))
+        if maximum(ctrlList) > 0 
             proceed=true
-            global secondaryHalt
-            secondaryHalt=false
-        else
-            global proceed 
-            proceed= ! proceed
-            global secondaryHalt
             secondaryHalt=false
         end
         return nothing
     end
 
-    runOnceFunction=function(status)
-        #global runOnceState
-        #push!(runOnceState,status)
-        global proceed 
-        proceed=true 
-        global secondaryHalt
-        secondaryHalt=false
-        return nothing
-    end
+    #runOnceFunction=function(status)
+    #    #global runOnceState
+    #    #push!(runOnceState,status)
+    #    global proceed 
+    #    proceed=true 
+    #    global secondaryHalt
+    #    secondaryHalt=false
+    #    return nothing
+    #end
 
     Interact.@map runFunction(&runButton)
-    Interact.@map runOnceFunction(&runOnceButton)
+    #Interact.@map runOnceFunction(&runOnceButton)
     #println(agtCnt)
 
     if plotPop
@@ -332,7 +328,7 @@ for time in 1:modelTicks
     println("tick")
     println(time)
     while true
-        if  proceed
+        if  !proceed
             println("Not Allowed to Go :-(")
             sleep(1)
         else
@@ -384,11 +380,13 @@ for time in 1:modelTicks
         else
             duckUser=duckUser+1
         end
+        agtHist=Int64[]
+        #agt.history[time]=Float64[]
         searchCount::Int64=100+rand(searchCountDist,1)[1]
         for k in 1:searchCount
             searchRes=search(agt,agt.currEngine,time)
             currAgt=agtDict[searchRes[1]]
-            #push!(agt.history[time],tick)
+            push!(agtHist,searchRes[2])
             finGuess=searchRes[3]
             newRevenue=searchRes[4]
             searchUpdate(currAgt.currEngine,currAgt,finGuess)
@@ -402,7 +400,7 @@ for time in 1:modelTicks
                 duckSearchCnter=duckSearchCnter+1
                 push!(duckSearchTimer,searchRes[2])
             end
-
+        agt.history[time]=mean(agtHist)
         end    
 
         
@@ -449,6 +447,10 @@ for time in 1:modelTicks
         if agt.currEngine != agt.prevEngine
             # does the agent prefer its current engine?
             #println(time)
+            println("Agent")
+            println(agt.agtNum)
+            println("History")
+            println(agt.history)
             if agentMod.util(agt,mean(agt.history[time])) > agentMod.util(agt,mean(agt.history[time-1]))
                 agt.prevEngine=agt.currEngine
             else 
