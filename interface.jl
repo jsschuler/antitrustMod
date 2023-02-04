@@ -69,13 +69,13 @@ runOnceState=Int64[]
     # proceed=true 
     # secondary Halt=true
 
-
+pltTest=plot(1:10,1:10)
 function interface()
     privacyPref = slider(1.1:50.0, label = "Privacy Preference")
     agentCount = slider(10:1:200, label = "Agent Count")
     allTicks =slider(1:1:100,label="Model Ticks")
     learningTicks = slider(0.0:.01:1.0, label = "Google Head Start")
-    genAgt=button("Generate Agents")
+    genAgt=button("Run Model")
     # store the agent count to the global variable
     
     agtCntSet=function(cnt)
@@ -97,8 +97,8 @@ function interface()
         global modelTicks
         headStart=hs
         #println("Setting Headstart")
-        global ddTick
-        ddTick=round(Int64,headStart*modelTicks)
+        global duckTime
+        duckTime=round(Int64,headStart*modelTicks)
         #println("Setting Entrance Tick")
         #println(ddTick)
     end
@@ -127,11 +127,14 @@ function interface()
         RV=Beta(1.0,param)
         tFunc=x -> pdf(RV,x)
 
-        plot(xArray,tFunc.(xArray),title="Privacy Distribution")
+        plot(xArray,tFunc.(xArray),title="Privacy Distribution",legend=false)
+        xlabel!("Privacy Preference")
+        ylabel!("Agent Frequency")
+        
     end
     plt=Interact.@map privacyDensity(&privacyPref)
     wdg = Widget(["privacyPref" => privacyPref, "agentCount" => agentCount, "allTicks" => allTicks,"learningTicks" => learningTicks,"genAgt" => genAgt])
-    @layout! wdg hbox(plt,vbox(:privacyPref, :agentCount, :allTicks,:learningTicks,:genAgt)) ## custom layout: by default things are stacked vertically
+    @layout! wdg hbox(vbox(plt),vbox(:privacyPref, :agentCount, :allTicks,:learningTicks,:genAgt)) ## custom layout: by default things are stacked vertically
 end
 
 function waitTime()
@@ -147,13 +150,14 @@ function waitTime()
     return nothing
 end
 
+
 w = Window()
 body!(w, interface())
 waitTime()
 println("Proceeding to Generate Agents")
 # we need a function that says wait for agents
 plt2=plot(grid=false,axis=([],false));
-plt2=annotate!(.5, .5, "Please Wait for Agents to Generate", :blue);
+plt2=annotate!(.5, .5, "Please Wait for the Agents to Generate", :blue);
 wdg2 = Widget()
 body!(w, @layout! wdg2 hbox(plt2))
 # we need a function that displayes the agents 
@@ -164,7 +168,7 @@ runInterface=function()
         push!(privacyPref,agt.privacy)
     end
     # now introduce model controls
-    runMod=button("Setup Model")
+    runMod=button("Run Model")
 
     runStatus=function(status)
         if status > 0
@@ -197,29 +201,7 @@ end
 searchList=searchEngine[]
 # initialize Google 
 googleGen()
-
-function waitTime2()
-    while true
-        #println("Run Status")
-        global runBool
-        #println(runBool)
-        
-        if ! runBool
-            sleep(1)
-        else
-            break
-        end
-    end
-    #println("ahoy!")
-    return nothing
-end
-println("Agents Generated")
-body!(w,runInterface())
-waitTime2();
 # now get into the main model
-
-# first, we need plots, 
-
 
 # the visuals are the search length quantiles (line plots)
 
@@ -236,6 +218,7 @@ googleTimeTicker=Int64[]
 duckTimeTicker=Int64[]
 googleAgentTicker=Int64[]
 duckAgentTicker=Int64[]
+totalAgentTicker=Int64[]
 googleSearchTicker=Int64[]
 duckSearchTicker=Int64[]
 googlePercentileTracker5=Float64[]
@@ -253,7 +236,8 @@ duckPercentileTracker95=Float64[]
 # we need the model set up setup interface 
 
 # now, we display the end of tick report 
-function tickInterface(plotPop::Bool)
+function tickInterface()
+    plotPop::Bool=true
     runButton=button("Start")
     runOnceButton=button("Run Once")
     runFunction=function(status)
@@ -266,8 +250,15 @@ function tickInterface(plotPop::Bool)
         push!(ctrlList,status)
         println("Max")
         println(maximum(ctrlList))
-        if maximum(ctrlList) > 0 
+        println(ctrlList .> 0)
+        println("Long")
+        println(ctrlList[ctrlList .> 0])
+        stateVec=ctrlList[ctrlList .> 0]
+        if length(stateVec)%2==1
             proceed=true
+            secondaryHalt=false
+        else
+            proceed=false
             secondaryHalt=false
         end
         return nothing
@@ -291,15 +282,25 @@ function tickInterface(plotPop::Bool)
         # we need to generate the plots 
         # there are four plots 
         # the agent count plot using Google vs Duck Duck Go 
-        agtPlot=plot(googleTimeTicker,googleAgentTicker)
-        plot!(agtPlot,duckTimeTicker,duckAgentTicker)
+        agtPlot=plot(googleTimeTicker,googleAgentTicker,title="Users",label="Google")
+        xlabel!(agtPlot,"Time")
+        ylabel!(agtPlot,"User Count")
+        plot!(agtPlot,duckTimeTicker,duckAgentTicker,label="Duck Duck Go")
         # the search count plot Google vs Duck Duck Go
-        countPlot=plot(googleTimeTicker,googleSearchTicker)
-        plot!(countPlot,duckTimeTicker,duckSearchTicker)
+        countPlot=plot(googleTimeTicker,googleSearchTicker,title="Searches",label="Google")
+        xlabel!(countPlot,"Time")
+        ylabel!(countPlot,"Search Count")
+        plot!(countPlot,duckTimeTicker,duckSearchTicker,label="Duck Duck Go")
         # the google quantile plot 
-        googleQuantilePlot=plot(googleTimeTicker,[googlePercentileTracker5,googlePercentileTracker25,googlePercentileTracker50,googlePercentileTracker75,googlePercentileTracker95])
+        googleQuantilePlot=plot(googleTimeTicker,[googlePercentileTracker5,googlePercentileTracker25,googlePercentileTracker50,googlePercentileTracker75,googlePercentileTracker95],
+        title="Google Wait Time Quantiles",label=["5%" "25%" "50%" "75%" "95%"])
+        xlabel!(googleQuantilePlot,"Time")
+        ylabel!(googleQuantilePlot,"Weight Times")
         # the duck duck go quantile plot
-        duckQuantilePlot=plot(duckTimeTicker,[duckPercentileTracker5,duckPercentileTracker25,duckPercentileTracker50,duckPercentileTracker75,duckPercentileTracker95])
+        duckQuantilePlot=plot(duckTimeTicker,[duckPercentileTracker5,duckPercentileTracker25,duckPercentileTracker50,duckPercentileTracker75,duckPercentileTracker95],
+        title="Duck Duck Go Wait Time Quantiles",label=["5%" "25%" "50%" "75%" "95%"])
+        xlabel!(googleQuantilePlot,"Time")
+        ylabel!(googleQuantilePlot,"Weight Times")
     else
         # we need to generate the plots 
 
@@ -319,22 +320,14 @@ function tickInterface(plotPop::Bool)
     end
     
     wdg = Widget(["runButton" => runButton, "runOnceButton" => runOnceButton ])
-    @layout! wdg vbox(hbox(:runButton,:runOnceButton),hbox(agtPlot,countPlot,googleQuantilePlot,duckQuantilePlot))
+    @layout! wdg vbox(hbox(agtPlot,countPlot),hbox(googleQuantilePlot,duckQuantilePlot))
 end
-body!(w,tickInterface(false))
+#body!(w,tickInterface(false))
 
 
 for time in 1:modelTicks
     println("tick")
     println(time)
-    while true
-        if  !proceed
-            println("Not Allowed to Go :-(")
-            sleep(1)
-        else
-            break
-        end
-    end    
     #println("tick is"*string(time))
     # initialize Duck Duck Go if it is time
     if time==duckTime
@@ -357,7 +350,7 @@ for time in 1:modelTicks
         #println("Switching at time: "*string(time))
         switchAgents::Array{agentMod.agent}=sample(agtList,min(rand(poissonDist,1)[1],length(agtList)),replace=false)
         for agt in switchAgents
-            # The agent chooses a search engine at randon aside from the one it is using 
+            # The agent chooses a search engine at random aside from the one it is using 
             choices::searchEngine=sample(collect(setdiff(Set(searchList),Set([agt.currEngine]))),1)[1]
             agt.prevEngine=agt.currEngine
             agt.currEngine=choices
@@ -411,6 +404,8 @@ for time in 1:modelTicks
         push!(googleTimeTicker,time)
         push!(googleAgentTicker,googleUser)
         push!(googleSearchTicker,googleSearchCnter)
+        #println("Debug")
+        #println(googleSearchTicker)
         googQuantiles=quantile(googleSearchTimer,[.05,.25,.5,.75,.95])
         push!(googlePercentileTracker5,googQuantiles[1])
         push!(googlePercentileTracker25,googQuantiles[2])
@@ -423,6 +418,7 @@ for time in 1:modelTicks
         push!(duckTimeTicker,time)
         push!(duckAgentTicker,duckUser)
         push!(duckSearchTicker,duckSearchCnter)
+        #println(duckSearchCnter)
         duckQuantiles=quantile(duckSearchTimer,[.05,.25,.5,.75,.95])
         push!(duckPercentileTracker5,duckQuantiles[1])
         push!(duckPercentileTracker25,duckQuantiles[2])
@@ -447,10 +443,10 @@ for time in 1:modelTicks
         if agt.currEngine != agt.prevEngine
             # does the agent prefer its current engine?
             #println(time)
-            println("Agent")
-            println(agt.agtNum)
-            println("History")
-            println(agt.history)
+            #println("Agent")
+            #println(agt.agtNum)
+            #println("History")
+            #println(agt.history)
             if agentMod.util(agt,mean(agt.history[time])) > agentMod.util(agt,mean(agt.history[time-1]))
                 agt.prevEngine=agt.currEngine
             else 
@@ -459,14 +455,6 @@ for time in 1:modelTicks
         end
     end
     # now output Window
-    body!(w,tickInterface(true))
-    # and halt if running once
-    while true
-        if  secondaryHalt
-            println("Being Held Up Here")
-            sleep(1)
-        else
-            break
-        end
-    end    
 end
+body!(w,tickInterface())
+sleep(60)
