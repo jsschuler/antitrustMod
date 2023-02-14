@@ -9,7 +9,7 @@ modRuns=100
 modTime::Int64=50
 # when does DuckDuckGo enter?
 duckTime::Int64=25
-
+lawTime::Int64=25
 # now set the agent generation  key 
 agtSeed::Int64=rand(DiscreteUniform(1,10000),1)[1]
 Random.seed!(agtSeed)

@@ -69,18 +69,22 @@ runOnceState=Int64[]
     # proceed=true 
     # secondary Halt=true
 
-pltTest=plot(1:10,1:10)
+
 function interface()
     privacyPref = slider(1.1:50.0, label = "Privacy Preference")
     agentCount = slider(10:1:200, label = "Agent Count")
     allTicks =slider(1:1:100,label="Model Ticks")
     learningTicks = slider(0.0:.01:1.0, label = "Google Head Start")
+    lawTicks = slider(0.0:.01:1.0, label = "Introduction of Privacy Law")
     genAgt=button("Run Model")
     # store the agent count to the global variable
     
     agtCntSet=function(cnt)
         global agtCnt 
         agtCnt=cnt 
+        global poissonDist
+        global switchPct
+        poissonDist=Poisson(switchPct*cnt)
         #println("Setting Agent Count")
         #println(agtCnt)
     end
@@ -103,6 +107,12 @@ function interface()
         #println(ddTick)
     end
 
+    lawSet=function(ls)
+        global lawTime
+        global modelTicks
+        lawTime=max(2,round(Int64,ls*modelTicks))
+    end
+
     buttonStatus=function(status)
         println("Please never push this button again")
         println(status)
@@ -117,6 +127,7 @@ function interface()
     Interact.@map agtCntSet(&agentCount)
     Interact.@map modTicksSet(&allTicks)
     Interact.@map headSet(&learningTicks)
+    Interact.@map lawSet(&lawTicks)
     Interact.@map buttonStatus(&genAgt)
     #println(agtCnt)
 
@@ -133,8 +144,8 @@ function interface()
         
     end
     plt=Interact.@map privacyDensity(&privacyPref)
-    wdg = Widget(["privacyPref" => privacyPref, "agentCount" => agentCount, "allTicks" => allTicks,"learningTicks" => learningTicks,"genAgt" => genAgt])
-    @layout! wdg hbox(vbox(plt),vbox(:privacyPref, :agentCount, :allTicks,:learningTicks,:genAgt)) ## custom layout: by default things are stacked vertically
+    wdg = Widget(["privacyPref" => privacyPref, "agentCount" => agentCount, "allTicks" => allTicks,"learningTicks" => learningTicks,"lawTicks" => lawTicks,"genAgt" => genAgt])
+    @layout! wdg hbox(vbox(plt),vbox(:privacyPref, :agentCount, :allTicks,:learningTicks,:lawTicks,:genAgt)) ## custom layout: by default things are stacked vertically
 end
 
 function waitTime()
@@ -330,9 +341,13 @@ for time in 1:modelTicks
     println(time)
     #println("tick is"*string(time))
     # initialize Duck Duck Go if it is time
+    
+
     if time==duckTime
         duckGen()
     end
+
+
     agtTicks=Float64[]
     googTicks=Float64[]
     duckTicks=Float64[]
@@ -345,6 +360,21 @@ for time in 1:modelTicks
     for engine in searchList
         engine.revenue[time]=0
     end
+    # if a privacy law is available, all agents check to see if they want their data deleted 
+    if time >= lawTime
+        for agt in agtList
+            if agentMod.util(agt,agt.history[time-1]) < agentMod.util(agt)
+                agt.optOut=true
+                println("Check")
+                println( agentMod.util(agt,agt.history[time-1]))
+                println(agentMod.util(agt))
+                println("Agent "*string(agt.agtNum)*" Opting Out")
+            end
+        end
+
+    end
+    
+    
     # some Poisson number of agents try a different search engine if one is available. 
     if length(searchList) > 1
         #println("Switching at time: "*string(time))
@@ -447,8 +477,17 @@ for time in 1:modelTicks
             #println(agt.agtNum)
             #println("History")
             #println(agt.history)
-            if agentMod.util(agt,mean(agt.history[time])) > agentMod.util(agt,mean(agt.history[time-1]))
+            #println("Utility this round")
+            #println(agentMod.util(agt,agt.history[time]))
+            #println("Utility Last Round")
+            #println(agentMod.util(agt,agt.history[time-1]))
+            #println("Agent Current Engine")
+            #println(agt.currEngine)
+            #println("Agent Previous Engine")
+            #println(agt.prevEngine)
+            if agentMod.util(agt,agt.history[time]) > agentMod.util(agt,agt.history[time-1])
                 agt.prevEngine=agt.currEngine
+                #println("Switching")
             else 
                 agt.currEngine=agt.prevEngine
             end

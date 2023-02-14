@@ -22,6 +22,8 @@ module agentMod
         history::Dict{Int64,Float64}
         currEngine::Any
         prevEngine::Any
+        optOut::Bool
+        waitUnif::Float64
         
     end
     # for convenience, we need an agent object we can send off to parallel processes
@@ -110,12 +112,16 @@ module agentMod
         agtUtil=Gamma(gammaK,1)
         #push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
         #println(typeof(key))
-        return agent(agtNum,privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),nothing,nothing)
+        return agent(agtNum,privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),nothing,nothing,false,unifExp)
 
     end   
 
     # now, we need a utility function for the agent
     function util(agt::agent,arg::Float64)
         return pdf(agt.gammaObj,arg)
+    end
+    # and we need a function that simply evaluates the agent's utility at the expected weight time under uniformity
+    function util(agt::agent)
+        return pdf(agt.gammaObj,agt.waitUnif)
     end
 end

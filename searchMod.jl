@@ -33,7 +33,7 @@ function subsearch(agt::agentMod.agent,engine::Google,searchResolution::Float64,
     #println(agt.agtNum)
     bestDist::agentMod.probType=Uniform()
     U::Uniform=Uniform()
-    if length(engine.agentHistory[agt]) >= 30
+    if length(engine.agentHistory[agt]) >= 30 && !agt.optOut
         #println("Fitting")
         bestDist=fit(Beta,engine.agentHistory[agt])
     else
