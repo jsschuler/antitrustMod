@@ -1,6 +1,9 @@
 abstract type searchEngine
 end
 
+abstract type tickTime
+end
+
 mutable struct Google <: searchEngine
     agentHistory::Dict{agentMod.agent,Array{Float64}}
     revenue::Dict{Int64,Int64}
@@ -167,4 +170,6 @@ end
 
 function searchUpdate(engine::DuckDuckGo,agt::agentMod.agent,newHist::Float64)
 end
+
+# now we need to define a macro for any additional search engine 
 
