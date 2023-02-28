@@ -16,9 +16,32 @@ width=2*cos(π/2-α)
 # the largest group of agents will be the limiting factor 
 # ideally, each group will be rougly equally long
 
-arrangeFunc=function()
+numSplit=function(num::Int64)
+    # if the number if even, just split in half
+    if num%2==0
+        outPut=Int64.([num/2,num/2])
+    else
+        outPut=[floor(Int64,num/2)+1,floor(Int64,num/2)]
+    end
+    return outPut
+end
+
+nameSplit=function()
+
+arrangeFunc=function(step::Int64)
     global agtTypCnt
     rankVec=ordinalrank(agtTypCnt)
+    workingVec=agtTypCnt
+    for t in 1:step
+        newVec=[]
+        rankVec=ordinalrank(workingVec)
+        for j in 1:length(rankVec)
+            if rankVec[j]==1
+                numSplit(workingVec[j])
+            end
+        end
+    end
+
 
 end
 

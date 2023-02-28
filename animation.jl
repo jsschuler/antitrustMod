@@ -78,12 +78,18 @@ end connection = connection p1 = pos(earth) p2 = pos(venus) color = "#f05a4f")
 render(myvideo; pathname = "cosmic_dance.gif")
 
 # tutorial 3
-using Random
 using Javis
-video = Video(500, 500)
+using Random
+
 function ground(args...)
     background("white")
     sethue("black")
+end
+
+function draw_line(p1 = O, p2 = O, color = "black", action = :stroke, edge = "solid")
+    sethue(color)
+    setdash(edge)
+    line(p1, p2, action)
 end
 
 function circ(p = O, color = "black", action = :fill, radius = 25, edge = "solid")
@@ -92,23 +98,12 @@ function circ(p = O, color = "black", action = :fill, radius = 25, edge = "solid
     circle(p, radius, action)
 end
 
-head = Object((args...) -> circ(O, "black", :stroke, 170))
-
-function draw_line(p1 = O, p2 = O, color = "black", action = :stroke, edge = "solid")
-    sethue(color)
-    setdash(edge)
-    line(p1, p2, action)
+function info_box(video, object, frame)
+    fontsize(12)
+    box(140, -210, 170, 40, :stroke)
+    text("10-20 EEG Array Readings", 140, -220, valign = :middle, halign = :center)
+    text("t = $(frame)s", 140, -200, valign = :middle, halign = :center)
 end
-
-inside_circle = Object((args...) -> circ(O, "black", :stroke, 140, "longdashed"))
-vert_line = Object(
-    (args...) ->
-        draw_line(Point(0, -170), Point(0, 170), "black", :stroke, "longdashed"),
-)
-horiz_line = Object(
-    (args...) ->
-        draw_line(Point(-170, 0), Point(170, 0), "black", :stroke, "longdashed"),
-)
 
 function electrode(
     p = O,
@@ -149,22 +144,21 @@ electrodes_list = [
     (name = "O2", position = Point(40, 135)),
 ]
 
-radius = 15 # Radius of the electrodes
-for num in 1:length(electrodes_list)
-    Object(
-        (args...) ->
-            electrode.(
-                electrodes_list[num].position,
-                "white",
-                "black",
-                :fill,
-                radius,
-                electrodes_list[num].name,
-            ),
-    )
-end
-
+radius = 15
 indicators = ["white", "gold1", "darkolivegreen1", "tomato"]
+demo = Video(500, 500)
+
+anim_background = Background(1:10, ground)
+head = Object((args...) -> circ(O, "black", :stroke, 170))
+inside_circle = Object((args...) -> circ(O, "black", :stroke, 140, "longdashed"))
+vert_line = Object(
+    (args...) ->
+        draw_line(Point(0, -170), Point(0, 170), "black", :stroke, "longdashed"),
+)
+horiz_line = Object(
+    (args...) ->
+        draw_line(Point(-170, 0), Point(170, 0), "black", :stroke, "longdashed"),
+)
 
 for num in 1:length(electrodes_list)
     Object(
@@ -179,26 +173,8 @@ for num in 1:length(electrodes_list)
             ),
     )
 end
-for num in 1:length(electrodes_list)
-    Object(
-        (args...) ->
-            electrode.(
-                electrodes_list[num].position,
-                rand(indicators, length(electrodes_list)),
-                "black",
-                :fill,
-                radius,
-                electrodes_list[num].name,
-            ),
-    )
-end
-
-function info_box(video, object, frame)
-    fontsize(12)
-    box(140, -210, 170, 40, :stroke)
-    text("10-20 EEG Array Readings", 140, -220, valign = :middle, halign = :center)
-    text("t = $(frame)s", 140, -200, valign = :middle, halign = :center)
-end
-
 info = Object(info_box)
+
 render(demo, pathname = "eeg.gif", framerate = 1)
+
+
