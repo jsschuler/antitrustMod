@@ -15,4 +15,8 @@
 # agents also have a parameter  determining how often they "Act" (try a new search engine)
 # The possible actions depend on the environment 
     # if a data sharing law is available, agents can copy their data across search engines 
-    # if a data deletion rule is available, 
+    # if a data deletion rule is available, agents may delete their data 
+    # agents can switch across any available search engines 
+
+# agents are connected by a network. When an agent undertakes an action, adjacent agents in the network also try the action 
+# and maintain it if they prefer it. 
