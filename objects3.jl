@@ -93,7 +93,7 @@ end
 
 function duckGen()
     global engineList
-    push!(engineList,duckduckGo(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()))
+    push!(engineList,duckDuckGo(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()))
 end
 
 # finally, a function to generate other search engines
@@ -102,10 +102,17 @@ end
 # other functions will call this and also specify the particular behavior 
 
 function otherGen(name)
-    string="mutable struct "*name*" <: softEngine aliasData::Dict{alias,Array{Float64}}
-        usageCount::Dict{Int64,Int64}
-        end"
+    symName=Symbol(name)
+    quote
+        mutable struct $symName <: paramEngine
+            aliasData::Dict{alias,Array{Float64}}
+            usageCount::Dict{Int64,Int64}
+        end
+        push!(engineList,$symName(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()))
+    end
 end
+
+
 
 # this must be called through an eval / Meta parse statement  
 
@@ -132,10 +139,7 @@ end
 
 # finally, actions 
 
-struct action
-    law::Union{Nothing,law}
-    target::searchEngine
-end
+abstract type action end
 
 actionList=action[]
 
@@ -144,30 +148,41 @@ actionList=action[]
 
 # we need a quote func
 
-function actQuoteFunc(law,engine)
+function actQuoteFunc(law,engine,idx)
     # how many actions are there already?
-    actCnt=length(subtypes(action))
-    law=string(law)
-    engine=string(engine)
-    quote
-        struct action$(esc(string(lawCnt))) <: action
-            law::$(esc(law))
-            engine::$(esc(engine))
+    actNm=Symbol("action"*string(idx))
+    engineNm=Symbol(string(engine))
+    if isnothing(law)
+        quote
+            struct $actNm <: action
+                engine::$engineNm
+            end
+        end
+        
+    else
+        lawNm=Symbol(string(law))
+        quote
+            struct $actNm <: action
+                law::$lawNm
+                engine::$engineNm
+            end
         end
     end
+    #println(actCnt)
 end
-
 function actionCombine()
     global actionList
     actionList=action[]
     # get the list of all current laws
-    allLaws::Array{Union{Nothing,law}}=vcat([nothing],substypes(law))
-    allEngines::Array{searchEngine}=subtypes(searchEngine)
+    allLaws=vcat([nothing],subtypes(law))
+    allEngines=subtypes(searchEngine)
     # now, an array of quotes
     qArray=[]
+    actionTicker=0
     for l in allLaws
         for e in allEngines
-            push!(qArray,actQuoteFunc(l,e))
+            actionTicker=actionTicker+1
+            push!(qArray,actQuoteFunc(l,e,actionTicker))
         end
     end
     return qArray
@@ -209,10 +224,21 @@ function deleteLaw(act)
     quote
         function act(move::$(esc(actType)),alias::alias)
             move.target.aliasData[alias.agt]=[]
+        end
     end
 end
 # this function generates a quoted function for a data sharing law 
-
+# 
+function sharingLaw(act)
+    actType=string(typeof(act))
+    engineObj=string(typeof(act.target))
+    targetEngine=filter(x -> typeof(x)==typeof(act.target),engineList)[1]
+    quote
+        function act(move::$(esc(actType)),alias::alias)
+            move.target.aliasData[alias]=alias.agt.currEngine.aliasData[alias]
+        end
+    end
+end
 
 function actQuoteGen()
     # get a list of all search engines 
@@ -221,18 +247,21 @@ function actQuoteGen()
     for act in actionList
         if act.law===nothing
             # we need switching instructions
-
-
-
-            push!(qArray,
-
-                )
+            push!(qArray,switchLaw(act))
+        elseif typeof(act.law)==deletion
+            push!(qArray,deleteLaw(act))
         else
-
-
-
+            push!(qArray,sharingLaw(act))
         end
+    end
+    return qArray
+end
 
-        
+# now generate these functions
+
+function actFuncGen()
+    actQuotes=actQuoteGen()
+    for q in actQuotes
+        eval(q)
     end
 end
