@@ -36,14 +36,13 @@ mutable struct agent
     history::Dict{Int64,Float64}
     currEngine::Any
     prevEngine::Any
-    
-    
 end
 
 # we also need an internet alias as agents can develop different ones 
 
 mutable struct alias
     agt::agent
+    optOut::Bool
 end
 
 # we need a preliminary set of search objects 
