@@ -52,7 +52,7 @@ module agentMod
         end
         # we need a function that generates the agents
         # first, we need a function that simulates the search process under an assumed distribution
-        function weightTime(prob::probType,agtPref::Beta{Float64})
+        function waitTime(prob::probType,agtPref::Beta{Float64})
             global searchResolution
             # generate actual desired result
             result::Float64=rand(agtPref,1)[1]

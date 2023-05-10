@@ -36,10 +36,7 @@ include("searchMod.jl")
 # now it is time to build the main model 
 
 # Step 0: Initialize all agents, Initialize Google and set the tick on which Duck Duck Go will enter 
-agtList=agentMod.agent[]
-for i in 1:agtCnt
-    push!(agtList,agentMod.agentGen(i,privacyBeta))
-end
+
 
 
 
