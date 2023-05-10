@@ -28,32 +28,11 @@ include("objects3.jl")
 # include global parameters
 include("globals.jl")
 
+# now, all actions work through aliases. 
+# if an agent decides to use a VPN, it simply generates a new alias. 
+# if an agent requests deletion, it removes records of its alias from the search engine. 
+# if an agent requests data sharing, it transfers its alias data to another search engine 
 
-
-#a1=agent(1,.5,Beta(.3,.5),Gamma(4,5),.2,.2,.6,Dict{Int64,Float64}(),nothing,nothing)
-
-#alias1=alias(a1)
-
-# now test Google and Duck Duck Go
-#googleGen()
-#duckGen()
-# now test the other search engine generator
-#eval(otherGen("newSearch"))
-#engineList
-#println(engineList)
-#deletionGen(10)
-#println(lawList)
-#sharingGen(15)
-#println(lawList)
-#for l in lawList
-#    println(supertype(typeof(l)))
-#    println(subtypes(supertype(typeof(l))))
-#end
-#println(subtypes(law))
-
-#allActions=actionCombine()
-#println(allActions)
-#@actionGen()
 
 # initialize model
 include("initFunctions.jl")

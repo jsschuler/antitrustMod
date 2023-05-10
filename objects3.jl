@@ -24,9 +24,21 @@
 # as a preliminary, define agents 
 using Distributions
 probType=Union{Uniform{Float64},Beta{Float64}}
+# we need an internet alias as agents can develop different ones 
+
+mutable struct alias
+    optOut::Bool
+end
+allAlias=alias[]
+
+function aliasGen()
+    global allAlias
+    push!(allAlias,alias(false))
+end
 # we need a basic agent object
 mutable struct agent
     agtNum::Int64
+    mask::alias
     privacy::Float64
     betaObj::Beta{Float64}
     gammaObj::Gamma{Float64}
@@ -38,12 +50,7 @@ mutable struct agent
     prevEngine::Any
 end
 
-# we also need an internet alias as agents can develop different ones 
 
-mutable struct alias
-    agt::agent
-    optOut::Bool
-end
 
 # we need a preliminary set of search objects 
 
@@ -117,6 +124,15 @@ end
 
 # now the functions to generate laws.
 # we keep track of when they are passed
+# for convenience, vpn access is also represented as a law
+struct vpn <: law
+    available::Int64
+end
+
+function vpnGen(t)
+    global lawList
+    push!(lawList,vpn(t))
+end
 
 struct deletion <: law
     available::Int64
