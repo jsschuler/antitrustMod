@@ -129,3 +129,5 @@ end
 # Duck Duck Go does not
 function update(result::Float64,mask::alias,engine::DuckDuckGo)
 end
+
+# we need to add a macro to generate functions for any additional search engine.

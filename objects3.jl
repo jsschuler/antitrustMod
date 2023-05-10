@@ -172,9 +172,31 @@ function actQuoteFunc(law,engine,idx)
             struct $actNm <: action
                 engine::$engineNm
             end
+
+            # we need the before act where the agent switches search engines
+            function beforeAct(agt::agent,action::$actNm)
+                agt.prevEngine=agt.currEngine
+                global engineList
+                findEngine::searchEngine=engineList[1]
+                for engine in engineList
+                    if typeof(engine)==$engineNm
+                        findEngine=engine
+                    end
+                agt.currEngine==findEngine
+            end
+            # In the after act, the agent makes the change permanent if it prefers it
+            function afterAct(agt::agent,result::Bool,action::$actNm)
+                if !result
+                    agt.currEngine=agt.prevEngine
+                    agt.prevEngine=nothing
+                end
+            end
+
+
         end
         
     else
+        ## ! now we need to add the before and after actions for the various laws
         lawNm=Symbol(string(law))
         quote
             struct $actNm <: action
