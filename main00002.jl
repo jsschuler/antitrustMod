@@ -20,9 +20,12 @@
 
 # agents are connected by a network. When an agent undertakes an action, adjacent agents in the network also try the action 
 # and maintain it if they prefer it. 
-using Distributions
+using Distributed
+@everywhere using Distributions
 using InteractiveUtils
-using Graphs
+using Graphs 
+using Random
+
 # let's test some objects
 include("objects3.jl")
 # include global parameters
@@ -41,7 +44,7 @@ include("initFunctions.jl")
 googleGen()
 
 # generate agents
-agtList=agentMod.agent[]
+agtList=agent[]
 genAgents()
 
 for tick in 1:modRuns

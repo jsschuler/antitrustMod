@@ -33,7 +33,9 @@ allAlias=alias[]
 
 function aliasGen()
     global allAlias
-    push!(allAlias,alias(false))
+    newAlias=alias(false)
+    push!(allAlias)
+    return newAlias
 end
 # we need a basic agent object
 mutable struct agent
@@ -73,11 +75,13 @@ abstract type paramEngine <: searchEngine end
 mutable struct google <: hardEngine
     aliasData::Dict{alias,Array{Float64}}
     usageCount::Dict{Int64,Int64}
+    aliasHld::Dict{alias,Array{Float64}}
 end
 # and the Duck Duck Go Engine
 mutable struct duckDuckGo <: hardEngine
     aliasData::Dict{alias,Array{Float64}}
     usageCount::Dict{Int64,Int64}
+    aliasHld::Dict{alias,Array{Float64}}
 end
 
 # also, we need the law structs 
@@ -92,14 +96,14 @@ lawList=law[]
 # first the function to generate Google 
 function googleGen()
     global engineList
-    push!(engineList,google(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()))
+    push!(engineList,google(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}(),Dict{Int64,Int64}()))
 end
 
 # now, the function to generate Duck Duck Go 
 
 function duckGen()
     global engineList
-    push!(engineList,duckDuckGo(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()))
+    push!(engineList,duckDuckGo(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()),Dict{Int64,Int64}())
 end
 
 # finally, a function to generate other search engines
@@ -114,7 +118,7 @@ function otherGen(name)
             aliasData::Dict{alias,Array{Float64}}
             usageCount::Dict{Int64,Int64}
         end
-        push!(engineList,$symName(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()))
+        push!(engineList,$symName(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()),Dict{Int64,Int64}())
     end
 end
 
@@ -183,6 +187,7 @@ function actQuoteFunc(law,engine,idx)
                         findEngine=engine
                     end
                 agt.currEngine==findEngine
+                end
             end
             # In the after act, the agent makes the change permanent if it prefers it
             function afterAct(agt::agent,result::Bool,action::$actNm)
@@ -195,15 +200,43 @@ function actQuoteFunc(law,engine,idx)
 
         end
         
-    else
-        ## ! now we need to add the before and after actions for the various laws
-        lawNm=Symbol(string(law))
+    elseif typeof(law)==deletion
+        actNm=Symbol("action"*string(idx))
+        engineNm=Symbol(string(engine))
         quote
             struct $actNm <: action
                 law::$lawNm
                 engine::$engineNm
             end
+
+            function beforeAct(agt:agent,action::$actionNm)
+                action.engine.aliasHld[alias]=action.engine.aliasData[alias]
+                action.engine.aliasData[alias]=[]
+            end
+
+            function afterAct(agt::agent,result::Bool,action::$actionNm)
+                if result
+                    action.engine.aliasHld[alias]=[]
+                else
+                    action.engine.aliasData[alias]=action.engine.aliasHld[alias]
+                    action.engine.aliasHld[alias]=[]
+                end
+            end
+
         end
+
+    else
+        quote
+            struct $actNm <: action
+                law::$lawNm
+                engine::$engineNm
+            end
+        
+        
+        end
+
+
+
     end
     #println(actCnt)
 end

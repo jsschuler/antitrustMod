@@ -50,6 +50,51 @@ function waitTime(prob::probType,agtPref::Beta{Float64})
 return tick
 end 
 
+function waitIter(distVec)
+    agtDist::probType=distVec[1]
+    searchDist::probType=distVec[2]
+    result=rand(agtDist,1)[1]
+    finGuess::Float64=0.0
+    maxGuess::Float64=1.0
+    minGuess::Float64=0.0
+    timer::Int64=0
+    while true
+        timer=timer+1
+        guess::Float64=rand(searchDist,1)[1]
+        #println("Tick")
+        #println(tick)
+        #println("Target")
+        #println(result)
+        #println("Guess")
+        #println(guess)
+        #println("Tick\n"*string(tick)*"\nTarget\n"*string(result)*"\nGuess\n"*string(guess))
+        if abs(guess-result) <= searchResolution
+            # add this to the agent's history 
+            finGuess=guess
+            #println("Flag")
+            break
+        else
+            if guess > result
+                # if the guess is too high then we replace the upper bound with the guess 
+                maxGuess=guess
+            else
+                # if the guess is too low, we replace the upper bound with the guess 
+                minGuess=guess
+            end
+            # find out the quantile of the guess for the assumed distribution
+            loGuess=cdf(searchDist,minGuess)
+            hiGuess=cdf(searchDist,maxGuess)
+            guess=quantile(searchDist,rand(U,1)[1]*(hiGuess-loGuess)+loGuess)
+        end
+        return timer
+    end
+end
+
+function waitTime(agtDist::probType,searchDist::probType)
+    iterVec=repeat([[agtDist,searchDist]],1000)
+    return pmap(waitIter,iterVec)
+end
+
 
 function agentGen(agtNum::Int64)
     # generate privacy preference
@@ -62,8 +107,8 @@ function agentGen(agtNum::Int64)
     selfArray=Float64[]
     unifArray=Float64[]
     for t in 1:10000
-        push!(selfArray,weightTime(myPrefs,myPrefs))
-        push!(unifArray,weightTime(uniPref,myPrefs))
+        push!(selfArray,waitTime(myPrefs,myPrefs))
+        push!(unifArray,waitTime(uniPref,myPrefs))
     end
     # calculate bliss points under either privacy extreme case
     selfExp=mean(selfArray)
@@ -104,7 +149,7 @@ function genAgents()
     global agtCnt
     global agtList
     for i in 1:agtCnt
-        push!(agtList,agentMod.agentGen(i))
+        push!(agtList,agentGen(i))
     end
 end
 
