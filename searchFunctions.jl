@@ -5,7 +5,7 @@ function subsearch(agt::agent,engine::google,searchResolution::Float64)
     #println(agt.agtNum)
     bestDist::probType=Uniform()
     U::Uniform=Uniform()
-    println(engine.aliasData)
+    #println(engine.aliasData)
     # now, check if the search engine has seen this mask before
     if !haskey(engine.aliasData,agt.mask)
         engine.aliasData[agt.mask]=[]
@@ -13,7 +13,7 @@ function subsearch(agt::agent,engine::google,searchResolution::Float64)
 
     if length(engine.aliasData[agt.mask]) >= 30 && !agt.mask.optOut
         #println("Fitting")
-        bestDist=fit(Beta,engine.aliasData[mask])
+        bestDist=fit(Beta,engine.aliasData[agt.mask])
     else
         bestDist=Uniform()
     end

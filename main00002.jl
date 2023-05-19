@@ -43,6 +43,12 @@ include("searchFunctions.jl")
 agtList=agent[]
 genAgents()
 
+# we need a vector of agents to act 
+agtActVec=agent[]
+# and a vector of nothing unioned with actions 
+# nothing implies the agent chooses an action at random
+actionVec=Union{action,Nothing}[]
+
 for tick in 1:modRuns
     # First, have all agents set themselves up. 
     # this function gets rewritten depending on the actions the agents take
@@ -55,7 +61,7 @@ for tick in 1:modRuns
         for i in searchOrder
             # we need an array for how long it took
             searchWait=Int64[]
-            println(searchCnt[i])
+            #println(searchCnt[i])
             searchRes=search(agtList[i],searchCnt[i])
             # now for each agent, we need to know the final target of the search result 
             for res in searchRes
@@ -63,9 +69,26 @@ for tick in 1:modRuns
                 update(res[4],agtList[i].mask,agtList[i].currEngine)
                 push!(searchWait,res[3])
             end
-            
             # now update agent's history
             agtList[i].history[t]=mean(searchWait)
+
+            # now, agents decide whether to maintain their current behavior or revert
+
+            # now, introduce new search engines if applicable
+
+
+            # now introduce new laws if applicable 
+
+            # now, run any scheduled agent actions from the previous step
+
+            # now randomly select agents to act exogenously 
+
+            # and randomly select actions for those agents 
+
+
+            # append these agents and actions to the vectors
+
+             
         end
     end
 end
