@@ -130,7 +130,7 @@ function agentGen(agtNum::Int64)
     #push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
     #println(typeof(key))
     global engineList
-    return agent(agtNum,aliasGen(),privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),engineList[1],nothing,false)
+    return agent(agtNum,aliasGen(false),privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),engineList[1],nothing)
 end   
 
 # now, we need a utility function for the agent
@@ -153,3 +153,4 @@ function genAgents()
     end
 end
 
+# now, we need to generate the network linking the agents 

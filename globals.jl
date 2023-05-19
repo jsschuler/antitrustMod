@@ -1,8 +1,13 @@
+# Dependencies
+using Distributed
+@everywhere using Distributions
+using InteractiveUtils
+using Graphs 
+using Random
+
 ## global parameters
-# what is the probability that a random successful search results in an ad being clicked on?
-clickProb::Float64=0.5
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
-agtCnt=1000
+agtCnt=100
 # how many times to run the model?
 modRuns=100
 # how many ticks for each model run?
@@ -40,3 +45,5 @@ pctConnected=.2
 expDegree=floor(Int64,.2*agtCnt)
 β=.5
 agtGraph=watts_strogatz(agtCnt, expDegree, β)
+# Finally, we need a Poisson parameter to how much agents search
+searchQty=Poisson{Int64}(25)
