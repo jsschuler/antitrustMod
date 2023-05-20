@@ -97,14 +97,14 @@ lawList=law[]
 # first the function to generate Google 
 function googleGen()
     global engineList
-    push!(engineList,google(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}(),Dict{Int64,Int64}()))
+    push!(engineList,google(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}(),Dict{alias,Array{Float64}}()))
 end
 
 # now, the function to generate Duck Duck Go 
 
 function duckGen()
     global engineList
-    push!(engineList,duckDuckGo(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}()),Dict{Int64,Int64}())
+    push!(engineList,duckDuckGo(Dict{alias,Array{Float64}}(),Dict{Int64,Int64}(),Dict{alias,Array{Float64}}()))
 end
 
 # finally, a function to generate other search engines

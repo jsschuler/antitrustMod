@@ -53,8 +53,6 @@ actionVec=Union{action,Nothing}[]
 for tick in 1:modRuns
     # First, have all agents set themselves up. 
     # this function gets rewritten depending on the actions the agents take
-    @actionGen()
-
     for t in 1:modTime
         # have agents search 
         # randomize agt search amount 
@@ -88,22 +86,22 @@ for tick in 1:modRuns
             # now, introduce new search engines if applicable
             if tick==10
                 duckGen()
-                actionGen()
+                @actionGen()
             end
             # now introduce new laws if applicable 
             if tick==15
                 vpnGen(tick)
-                actionGen()
+                @actionGen()
             end
 
             if tick==20
                 deletionGen(tick)
-                actionGen()
+                @actionGen()
             end
 
             if tick==30
                 sharingGen(tick)
-                actionGen()
+                @actionGen()
             end
 
             
