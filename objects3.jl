@@ -50,6 +50,7 @@ mutable struct agent
     history::Dict{Int64,Float64}
     currEngine::Any
     prevEngine::Any
+    lastAct::Any
 end
 
 

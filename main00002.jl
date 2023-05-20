@@ -43,6 +43,7 @@ include("searchFunctions.jl")
 agtList=agent[]
 genAgents()
 
+
 # we need a vector of agents to act 
 agtActVec=agent[]
 # and a vector of nothing unioned with actions 
@@ -52,6 +53,8 @@ actionVec=Union{action,Nothing}[]
 for tick in 1:modRuns
     # First, have all agents set themselves up. 
     # this function gets rewritten depending on the actions the agents take
+    @actionGen()
+
     for t in 1:modTime
         # have agents search 
         # randomize agt search amount 
@@ -73,22 +76,94 @@ for tick in 1:modRuns
             agtList[i].history[t]=mean(searchWait)
 
             # now, agents decide whether to maintain their current behavior or revert
+            if tick > 1
+                for agt in agtList
+                    if !isnothing(agt.lastAct)
+                        result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
+                        afterAct(agt,result,agt.lastAct)
+                        end
+                    end
+                end
 
             # now, introduce new search engines if applicable
-
-
+            if tick==10
+                duckGen()
+                actionGen()
+            end
             # now introduce new laws if applicable 
+            if tick==15
+                vpnGen(tick)
+                actionGen()
+            end
+
+            if tick==20
+                deletionGen(tick)
+                actionGen()
+            end
+
+            if tick==30
+                sharingGen(tick)
+                actionGen()
+            end
+
+            
 
             # now, run any scheduled agent actions from the previous step
+            # we need a temporary array to hold the adjacent agents in the network
+            # and their actions
+            # if the same agent is the neighbor of more than one acting agent, we go 
+            # with the first assigned action
 
-            # now randomly select agents to act exogenously 
+            if length(actionList) > 0
+                tmpAgts=agent[]
+                tmpActs=action[]
+                while length(agtActVec) > 0
+                    currAgt=pop!(agtActVec)
+                    currAct=pop!(actionVec)
+                    if isnothing(currAct)
+                        # select an action at random
+                        currAct=sample(actionList,1)[1]
+                        beforeAct(currAgt,currAct)
+                    else
+                        beforeAct(currAgt,currAct)
+                    end
+                    # now, what are the neighbors of the current agent?
+                    neighborNumbers=collect(neighbors(agtGraph,currAgt.agtNum))
+                    neighbors=agent[]
+                    for i in neighborNumbers
+                        push!(neighborNumbers,agtList[i])
+                    end
+                    # now, remove any agent already scheduled for an action 
+                    for prevAgt in tmpAgts
+                        filter!(x-> x==prevAgt,neighbors)
+                    end
+                    actAdd=repeat([currAct],length(neighbors))
+                    tmpAgts=vcat(tmpAgts,neighbors)
+                    tmpActs=vcat(tmpActs,actAdd)
 
-            # and randomly select actions for those agents 
+                end
+                global agtActVec
+                global actionVec
+                agtActVec=tmpAgts
+                for act in tmpActs
+                    push!(actionVec,act)
+                end
+                # now randomly select agents to act exogenously next time
+                # how many agents should act?
+                # how many agents aren't scheduled to act?
+                newActCnt=min(rand(poissonDist,1)[1],agtCnt-length(agtActVec))
+                remainingAgts=collect(setdiff(Set(agtList),Set(agtActVec)))
 
+                newActAgts=sample(remainingAgts,newActCnt,replace=false)
+                # now randomly select acts 
+                newActs=sample(actionList,length(newActAgts),replace=true)
 
-            # append these agents and actions to the vectors
-
-             
+                # append these agents and actions to the vectors
+                agtActVec=vcat(agtActVec,newActAgts)
+                for act in newActs
+                    push!(actionVec,act)
+                end  
+            end
         end
     end
 end
