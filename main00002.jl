@@ -52,7 +52,7 @@ actionVec=Union{action,Nothing}[]
 
 
 
-
+include("graphPlot.jl")
 
 for tick in 1:modRuns
     # First, have all agents set themselves up. 
