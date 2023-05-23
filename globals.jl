@@ -4,10 +4,11 @@ using Distributed
 using InteractiveUtils
 using Graphs 
 using Random
+using JLD2
 
 ## global parameters
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
-agtCnt=100
+agtCnt=50
 # how many times to run the model?
 modRuns=100
 # how many ticks for each model run?
@@ -47,3 +48,4 @@ expDegree=floor(Int64,.2*agtCnt)
 agtGraph=watts_strogatz(agtCnt, expDegree, β)
 # Finally, we need a Poisson parameter to how much agents search
 searchQty=Poisson{Int64}(25)
+

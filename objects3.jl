@@ -176,7 +176,9 @@ function actQuoteFunc(law,engine,idx)
     if isnothing(law)
         quote
             struct $actNm <: action
+                law::Nothing
                 engine::$engineNm
+                
             end
 
             # we need the before act where the agent switches search engines
@@ -196,6 +198,8 @@ function actQuoteFunc(law,engine,idx)
                 if !result
                     agt.currEngine=agt.prevEngine
                     agt.prevEngine=nothing
+                else
+                    agt.lastAct=action
                 end
             end
 
@@ -219,6 +223,7 @@ function actQuoteFunc(law,engine,idx)
             function afterAct(agt::agent,result::Bool,action::$actionNm)
                 if result
                     action.engine.aliasHld[agt.mask]=[]
+                    act.lastAct=action
                 else
                     action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
                     action.engine.aliasHld[agt.mask]=[]
@@ -246,6 +251,8 @@ function actQuoteFunc(law,engine,idx)
                 if !result
                     agt.currEngine=agt.prevEngine
                     agt.prevEngine=nothing
+                else
+                    agt.lastAct=action
                 end
             end
 

@@ -50,6 +50,10 @@ agtActVec=agent[]
 # nothing implies the agent chooses an action at random
 actionVec=Union{action,Nothing}[]
 
+
+
+
+
 for tick in 1:modRuns
     # First, have all agents set themselves up. 
     # this function gets rewritten depending on the actions the agents take
@@ -164,4 +168,5 @@ for tick in 1:modRuns
             end
         end
     end
+    svgGen(tick)
 end
