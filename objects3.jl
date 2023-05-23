@@ -173,6 +173,8 @@ function actQuoteFunc(law,engine,idx)
     # how many actions are there already?
     actNm=Symbol("action"*string(idx))
     engineNm=Symbol(string(engine))
+    #println("Macro")
+    #println(engineNm)
     if isnothing(law)
         quote
             struct $actNm <: action
@@ -180,18 +182,15 @@ function actQuoteFunc(law,engine,idx)
                 engine::$engineNm
                 
             end
+            # find the relevant search engine 
+            myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
+            push!(actionList,$actNm(nothing,myEngine))
 
             # we need the before act where the agent switches search engines
             function beforeAct(agt::agent,action::$actNm)
                 agt.prevEngine=agt.currEngine
-                global engineList
-                findEngine::searchEngine=engineList[1]
-                for engine in engineList
-                    if typeof(engine)==$engineNm
-                        findEngine=engine
-                    end
-                agt.currEngine==findEngine
-                end
+                agt.currEngine==action.engine
+                agt.lastAct=action
             end
             # In the after act, the agent makes the change permanent if it prefers it
             function afterAct(agt::agent,result::Bool,action::$actNm)
@@ -199,7 +198,7 @@ function actQuoteFunc(law,engine,idx)
                     agt.currEngine=agt.prevEngine
                     agt.prevEngine=nothing
                 else
-                    agt.lastAct=action
+                    agt.lastAct=nothing
                 end
             end
 
@@ -218,12 +217,13 @@ function actQuoteFunc(law,engine,idx)
             function beforeAct(agt:agent,action::$actionNm)
                 action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
                 action.engine.aliasData[agt.mask]=[]
+                agt.lastAct=action
             end
 
             function afterAct(agt::agent,result::Bool,action::$actionNm)
                 if result
                     action.engine.aliasHld[agt.mask]=[]
-                    act.lastAct=action
+                    act.lastAct=nothing
                 else
                     action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
                     action.engine.aliasHld[agt.mask]=[]
@@ -245,6 +245,7 @@ function actQuoteFunc(law,engine,idx)
                 action.engine.aliasData[agt.mask]=agt.currEngine.aliasData[agt.mask]
                 agt.prevEngine=agt.currEngine
                 agt.currEngine=action.engine
+                agt.lastAct=action
             end
 
             function afterAct(agt::agent,result::Bool,action::$actionNm)
@@ -252,7 +253,7 @@ function actQuoteFunc(law,engine,idx)
                     agt.currEngine=agt.prevEngine
                     agt.prevEngine=nothing
                 else
-                    agt.lastAct=action
+                    agt.lastAct=nothing
                 end
             end
 
@@ -264,12 +265,21 @@ function actQuoteFunc(law,engine,idx)
     end
     #println(actCnt)
 end
+
+# we need a function that returns an array of terminal types
+
+function baseTypes(typ)
+    
+
+end
+
+
 function actionCombine()
     global actionList
-    actionList=action[]
+    #actionList=action[]
     # get the list of all current laws
     allLaws=vcat([nothing],subtypes(law))
-    allEngines=subtypes(searchEngine)
+    allEngines=vcat(subtypes(hardEngine),subtypes(paramEngine))
     # now, an array of quotes
     qArray=[]
     actionTicker=0

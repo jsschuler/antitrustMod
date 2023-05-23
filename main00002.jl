@@ -6,6 +6,16 @@
 #                                                                                                         #
 ###########################################################################################################
 
+### ! the source of the bug is that agents who already use Google are still "switching"
+## When they have an inferior run of luck, they switch back and get nothing as their search engine. 
+# we need to make it so that agents only undertake actions different from what they 
+# are currently doing. 
+# also, change the VPN logic such that if an agent takes the action twice, they stop using a vpn 
+
+
+
+
+
 ### Model Description ####
 
 # Agents have preferences for privacy meaning their bliss point is somewhere between the 
@@ -54,10 +64,16 @@ actionVec=Union{action,Nothing}[]
 
 include("graphPlot.jl")
 
+println("Debug: Search Engine List ")
+println(engineList)
+
 for tick in 1:modRuns
     # First, have all agents set themselves up. 
     # this function gets rewritten depending on the actions the agents take
     for t in 1:modTime
+        #println("Timing")
+        #println(tick)
+        #println(t)
         # have agents search 
         # randomize agt search amount 
         searchCnt=rand(searchQty,agtCnt)
@@ -76,97 +92,116 @@ for tick in 1:modRuns
             end
             # now update agent's history
             agtList[i].history[t]=mean(searchWait)
-
-            # now, agents decide whether to maintain their current behavior or revert
-            if tick > 1
-                for agt in agtList
-                    if !isnothing(agt.lastAct)
-                        result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
-                        afterAct(agt,result,agt.lastAct)
-                        end
-                    end
+        end
+        
+    end
+    println("Loop Finished")
+    println("Current Tick")
+    println(tick)
+    # now, agents decide whether to maintain their current behavior or revert
+    if tick > 1
+        println("I am running")
+        for agt in agtList
+            if !isnothing(agt.lastAct)
+                println("Comparison")
+                result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
+                if result
+                    println("Behavior Change")
                 end
-
-            # now, introduce new search engines if applicable
-            if tick==10
-                duckGen()
-                @actionGen()
-            end
-            # now introduce new laws if applicable 
-            if tick==15
-                vpnGen(tick)
-                @actionGen()
-            end
-
-            if tick==20
-                deletionGen(tick)
-                @actionGen()
-            end
-
-            if tick==30
-                sharingGen(tick)
-                @actionGen()
-            end
-
-            
-
-            # now, run any scheduled agent actions from the previous step
-            # we need a temporary array to hold the adjacent agents in the network
-            # and their actions
-            # if the same agent is the neighbor of more than one acting agent, we go 
-            # with the first assigned action
-
-            if length(actionList) > 0
-                tmpAgts=agent[]
-                tmpActs=action[]
-                while length(agtActVec) > 0
-                    currAgt=pop!(agtActVec)
-                    currAct=pop!(actionVec)
-                    if isnothing(currAct)
-                        # select an action at random
-                        currAct=sample(actionList,1)[1]
-                        beforeAct(currAgt,currAct)
-                    else
-                        beforeAct(currAgt,currAct)
-                    end
-                    # now, what are the neighbors of the current agent?
-                    neighborNumbers=collect(neighbors(agtGraph,currAgt.agtNum))
-                    neighbors=agent[]
-                    for i in neighborNumbers
-                        push!(neighborNumbers,agtList[i])
-                    end
-                    # now, remove any agent already scheduled for an action 
-                    for prevAgt in tmpAgts
-                        filter!(x-> x==prevAgt,neighbors)
-                    end
-                    actAdd=repeat([currAct],length(neighbors))
-                    tmpAgts=vcat(tmpAgts,neighbors)
-                    tmpActs=vcat(tmpActs,actAdd)
-
-                end
-                global agtActVec
-                global actionVec
-                agtActVec=tmpAgts
-                for act in tmpActs
-                    push!(actionVec,act)
-                end
-                # now randomly select agents to act exogenously next time
-                # how many agents should act?
-                # how many agents aren't scheduled to act?
-                newActCnt=min(rand(poissonDist,1)[1],agtCnt-length(agtActVec))
-                remainingAgts=collect(setdiff(Set(agtList),Set(agtActVec)))
-
-                newActAgts=sample(remainingAgts,newActCnt,replace=false)
-                # now randomly select acts 
-                newActs=sample(actionList,length(newActAgts),replace=true)
-
-                # append these agents and actions to the vectors
-                agtActVec=vcat(agtActVec,newActAgts)
-                for act in newActs
-                    push!(actionVec,act)
-                end  
+                afterAct(agt,result,agt.lastAct)
             end
         end
+    end
+    # now, introduce new search engines if applicable
+    if tick==10
+        println("DuckDuckGo In")
+        duckGen()
+        @actionGen()
+    end
+    println("Tick")
+    println(tick)
+    # now introduce new laws if applicable 
+    if tick==15
+        println("VPN In")
+        vpnGen(tick)
+        @actionGen()
+    end
+    println("Tick")
+    println(tick)
+    if tick==20
+        println("Deletion In")
+        deletionGen(tick)
+        @actionGen()
+    end
+    println("Tick")
+    println(tick)
+    if tick==30
+        println("Sharing In")
+        sharingGen(tick)
+        @actionGen()
+    end
+    println("Tick")
+    println(tick)
+    # now, run any scheduled agent actions from the previous step
+    # we need a temporary array to hold the adjacent agents in the network
+    # and their actions
+    # if the same agent is the neighbor of more than one acting agent, we go 
+    # with the first assigned action
+    println("action list")
+    println(length(actionList))
+    if length(actionList) > 0
+        tmpAgts=agent[]
+        tmpActs=action[]
+        while length(agtActVec) > 0
+            currAgt=pop!(agtActVec)
+            currAct=pop!(actionVec)
+            if isnothing(currAct)
+                # select an action at random
+                currAct=sample(actionList,1)[1]
+                beforeAct(currAgt,currAct)
+            else
+                beforeAct(currAgt,currAct)
+            end
+            # now, what are the neighbors of the current agent?
+            neighborNumbers=collect(neighbors(agtGraph,currAgt.agtNum))
+            agtNeighbors=agent[]
+            for i in neighborNumbers
+                push!(agtNeighbors,agtList[i])
+            end
+            # now, remove any agent already scheduled for an action 
+            for prevAgt in tmpAgts
+                filter!(x-> x==prevAgt,agtNeighbors)
+            end
+            actAdd=repeat([currAct],length(agtNeighbors))
+            tmpAgts=vcat(tmpAgts,agtNeighbors)
+            tmpActs=vcat(tmpActs,actAdd)
+        end
+        global agtActVec
+        global actionVec
+        agtActVec=tmpAgts
+        for act in tmpActs
+            push!(actionVec,act)
+        end
+        # now randomly select agents to act exogenously next time
+        # how many agents should act?
+        # how many agents aren't scheduled to act?
+        newActCnt=min(rand(poissonDist,1)[1],agtCnt-length(agtActVec))
+        remainingAgts=collect(setdiff(Set(agtList),Set(agtActVec)))
+        newActAgts=sample(remainingAgts,newActCnt,replace=false)
+        println("How many exogenous actions?")
+        println(newActCnt)
+        println("Who will Act Exogenously?")
+        println(length(newActAgts))
+
+        # now randomly select acts 
+        newActs=sample(actionList,length(newActAgts),replace=true)
+        # append these agents and actions to the vectors
+        agtActVec=vcat(agtActVec,newActAgts)
+        for act in newActs
+            push!(actionVec,act)
+        end  
+        
+        
     end
     svgGen(tick)
 end

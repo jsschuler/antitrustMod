@@ -76,20 +76,17 @@ function agentOutlineWidth(agt::agent)
     return lineWidth
 end
 
-agtPlot = gplot(agtGraph, nodefillc="white")
+#agtPlot = gplot(agtGraph, nodefillc="white")
 
-layout=(args...)->spring_layout(args...; C=30)
-
-draw(SVG("graph.svg", 16cm, 16cm), gplot(agtGraph,layout=layout,
-                                                   nodefillc=agentBaseColor.(agtList),
-                                                   nodestrokec=agentOutlineColor.(agtList),
-                                                   nodestrokelw=agentOutlineWidth.(agtList)))
+#layout=(args...)->spring_layout(args...; C=30)
+#curLayout=layout()
 
 # now we need a function that outputs the SVG 
 
 function svgGen(tick::Int64)
     global agtList
-    draw(SVG("graphPlots/graph"*string(tick)*".svg", 16cm, 16cm), gplot(agtGraph,layout=layout,
+    #global curLayout
+    draw(SVG("../plots/graph"*string(tick)*".svg", 16cm, 16cm), gplot(agtGraph,layout=spectral_layout,
                                                    nodefillc=agentBaseColor.(agtList),
                                                    nodestrokec=agentOutlineColor.(agtList),
                                                    nodestrokelw=agentOutlineWidth.(agtList)))
