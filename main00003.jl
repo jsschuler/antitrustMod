@@ -53,11 +53,14 @@ agtList=agent[]
 genAgents()
 
 
-# we need a vector of agents to act 
-agtActVec=agent[]
-# and a vector of nothing unioned with actions 
-# nothing implies the agent chooses an action at random
-actionVec=Union{action,Nothing}[]
+# We need two sets of vectors 
+# nothing implies choose an act at random
+nextAgt=agent[]
+timeAfterAgent=agent[]
+
+nextActs=Union{action,Nothing}[]
+timeAfterActs=Union{action,Nothing}[]
+
 
 
 
@@ -68,6 +71,9 @@ println(engineList)
 
 
 for tick in 1:modRuns
+    println("action test")
+    println(length(actionList))
+
     # first, introduce any new laws or search engines 
     if tick==10
         println("DuckDuckGo In")
@@ -100,19 +106,21 @@ for tick in 1:modRuns
     println(tick)
     # second, if we are at least two ticks into the model, agents act 
     # to change their search behavior 
-    tmpAgts=agent[]
-    tmpActs=action[]  
+
 
     if tick > 2
         # First, agents scheduled to act from the previous round act 
         # then, of the remaining agents who have not acted, some act exogenously 
-          
-        if length(actionList) > 0
-            while length(agtActVec) > 0
-                currAgt=pop!(agtActVec)
-                currAct=pop!(actionVec)
+        println("Acts")
+        println(length(nextActs))
+        println(length(nextAgt))
+        println(length(actionList))
+        if length(nextActs) > 0 & length(actionList) > 0
+            while length(nextAgt) > 0
+                currAgt=pop!(nextAgt)
+                currAct=pop!(nextActs)
                 println("debug")
-                println(currAgt)
+                println(currAct)
                 if isnothing(currAct)
                     # select an action at random
                     currAct=sample(actionList,1)[1]
@@ -123,28 +131,34 @@ for tick in 1:modRuns
                 end
             # now what are the neighbors of the agent? 
             neighborNumbers=collect(neighbors(agtGraph,currAgt.agtNum))
-                agtNeighbors=agent[]
-                actNeighbors=act[]
+            println("Graph Info")
+            println(neighborNumbers)
+            global timeAfterAgent
+            global timeAfterActs
                 for i in neighborNumbers
-                    push!(agtNeighbors,agtList[i])
-                    push!(actNeighbors,currAct)
+                    push!(timeAfterAgent,agtList[i])
+                    push!(timeAfterActs,currAct)
                 end
             end
-            tmpAgts=vcat(tmpAgts,agtNeighbors)
-            tmpActs=vcat(tmpActs,actNeighbors)
         end
     end 
-    # now we find the agents who have not been scheduled to act next tick 
-    remAgts=collect(setdiff(Set(agtList),Set(tmpAgts)))
+    println("Arrays")
+    println(timeAfterAgent)
+    println(timeAfterActs)
+
     # now how many agents act exogenously the next time?
-    exogCnt=rand(poissonDist,1)[1]
-    nextAgts=sample(remAgts,min(exogCnt,length(remAgts)),replace=false)
-    nullActs=repeat([nothing],length(nextAgts))
-    # stack these vectors 
-    global actionVec 
-    global agtActVec
-    actionVec=vcat(actionVec,nullActs)
-    agtActVec=vcat(agtActVec,nextAgts)
+    if length(actionList) > 0
+        exogCnt=rand(poissonDist,1)[1]
+        exogAgts=sample(agtList,min(exogCnt,length(agtList)),replace=false)
+        # stack these vectors 
+        global timeAfterAgent
+        global timeAfterActs
+        for j in 1:length(exogAgts)
+            push!(timeAfterAgent,exogAgts[j])
+            push!(timeAfterActs,nothing)
+        end
+    end
+
 
     
     # now all agents search 
@@ -188,4 +202,34 @@ for tick in 1:modRuns
 
     end
     svgGen(tick)
+    if length(actionList) > 0
+        # now process the next acts and replace the current acts 
+        # an agent undertakes prefers to mimic another agent to act exogenously 
+        finAgtVec=agent[]
+        finActVec=Union{action,Nothing}[]
+
+        for agt in Set(timeAfterAgent)
+            aDex=findfirst(x->x==agt,timeAfterAgent)
+            actDex=timeAfterActs[aDex]
+            if !isnothing(actDex)
+                push!(finAgtVec,agt)
+                push!(finActVec,timeAfterActs[aDex])
+            end
+        end
+        # now find any remaining agents who need to act
+        remnants=collect(setdiff(Set(timeAfterAgent),Set(finAgtVec)))
+        for rm in remnants
+            push!(finAgtVec,rm)
+            push!(finActVec,nothing)
+        end
+        # now randomize order 
+        ord=sample(1:length(finActVec),length(finActVec),replace=false)
+        for k in ord 
+            push!(nextAgt,finAgtVec[k])
+            push!(nextActs,finActVec[k])
+        end
+        # now reset the holding pen for future actions
+        timeAfterAgent=agent[]
+        timeAfterActs=Union{action,Nothing}[]
+    end
 end
