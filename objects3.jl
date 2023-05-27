@@ -188,17 +188,26 @@ function actQuoteFunc(law,engine,idx)
 
             # we need the before act where the agent switches search engines
             function beforeAct(agt::agent,action::$actNm)
-                agt.prevEngine=agt.currEngine
-                agt.currEngine==action.engine
-                agt.lastAct=action
+                # first, check if the agent is already using this engine 
+                if agt.currEngine!=action.engine
+                    agt.prevEngine=agt.currEngine
+                    agt.currEngine==action.engine
+                    agt.lastAct=action
+                end
             end
             # In the after act, the agent makes the change permanent if it prefers it
             function afterAct(agt::agent,result::Bool,action::$actNm)
-                if !result
-                    agt.currEngine=agt.prevEngine
-                    agt.prevEngine=nothing
-                else
-                    agt.lastAct=nothing
+                # again, first check if the agent was already using the action 
+                # targeted search engine
+                if !isnothing(agt.lastAct)
+                    if !result
+                        agt.currEngine=agt.prevEngine
+                        agt.prevEngine=nothing
+                        agt.lastAct=nothing
+                    else
+                        agt.prevEngine=nothing
+                        agt.lastAct=nothing
+                    end
                 end
             end
 
