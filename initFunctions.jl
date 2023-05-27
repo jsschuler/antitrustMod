@@ -130,7 +130,7 @@ function agentGen(agtNum::Int64)
     #push!(agtList,agent(privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}()))
     #println(typeof(key))
     global engineList
-    return agent(agtNum,aliasGen(false),privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),engineList[1],nothing,nothing)
+    return agent(agtNum,aliasGen(false),privacy,myPrefs,agtUtil,unifExp,selfExp,blissPoint,Dict{Int64,Int64}(),engineList[1],nothing,nothing,nothing)
 end   
 
 # now, we need a utility function for the agent

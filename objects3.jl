@@ -51,6 +51,7 @@ mutable struct agent
     currEngine::Any
     prevEngine::Any
     lastAct::Any
+    lastMask::Any
 end
 
 
@@ -166,6 +167,14 @@ actionList=action[]
 # now the function that generates actions
 # first, we generate all combinations of actions
 
+# it is inconvenient to use the Julia type "nothing" as a place holder 
+# thus, we create an additional one 
+
+struct Null end 
+function isnull(x)
+    return typeof(x)==Null
+end
+null=Null()
 
 # we need a quote func
 
@@ -175,16 +184,18 @@ function actQuoteFunc(law,engine,idx)
     engineNm=Symbol(string(engine))
     #println("Macro")
     #println(engineNm)
-    if isnothing(law)
+    if isnull(law)
         quote
             struct $actNm <: action
-                law::Nothing
+                law::Null
                 engine::$engineNm
                 
             end
             # find the relevant search engine 
+            global actionList
+            global engineList
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
-            push!(actionList,$actNm(nothing,myEngine))
+            push!(actionList,$actNm(null,myEngine))
 
             # we need the before act where the agent switches search engines
             function beforeAct(agt::agent,action::$actNm)
@@ -217,25 +228,31 @@ function actQuoteFunc(law,engine,idx)
     elseif typeof(law)==deletion
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(string(engine))
+        lawNm="deletion"
         quote
             struct $actNm <: action
                 law::$lawNm
                 engine::$engineNm
             end
-
-            function beforeAct(agt:agent,action::$actionNm)
+            global actionList
+            global lawList
+            myLaw=filter(x-> typeof(x)==$lawNm,lawList)[1]
+            myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
+            push!(actionList,$actNm(null,myEngine))
+            function beforeAct(agt:agent,action::$actNm)
                 action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
                 action.engine.aliasData[agt.mask]=[]
                 agt.lastAct=action
             end
 
-            function afterAct(agt::agent,result::Bool,action::$actionNm)
+            function afterAct(agt::agent,result::Bool,action::$actNm)
                 if result
                     action.engine.aliasHld[agt.mask]=[]
                     act.lastAct=nothing
                 else
                     action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
                     action.engine.aliasHld[agt.mask]=[]
+                    act.lastAct=nothing
                 end
             end
 
@@ -243,13 +260,21 @@ function actQuoteFunc(law,engine,idx)
     elseif typeof(law)==sharing
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(string(engine))
+        lawNm="sharing"
         quote
             struct $actNm <: action
                 law::$lawNm
                 engine::$engineNm
             end
-
-            function beforeAct(agt::agent,action::$actionNm)
+            global actionList
+            global lawList
+            myLaw=filter(x-> typeof(x)==$lawNm,lawList)[1]
+            myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
+            push!(actionList,$actNm(myLaw,myEngine))
+            function beforeAct(agt::agent,action::$actNm)
+                # agent generates a new alias
+                agt.alias=aliasGen(true)
+                
                 # share data from the agent's current search engine to its target search engine. 
                 action.engine.aliasData[agt.mask]=agt.currEngine.aliasData[agt.mask]
                 agt.prevEngine=agt.currEngine
@@ -257,10 +282,11 @@ function actQuoteFunc(law,engine,idx)
                 agt.lastAct=action
             end
 
-            function afterAct(agt::agent,result::Bool,action::$actionNm)
+            function afterAct(agt::agent,result::Bool,action::$actNm)
                 if !result
                     agt.currEngine=agt.prevEngine
                     agt.prevEngine=nothing
+                    agt.lastAct=nothing
                 else
                     agt.lastAct=nothing
                 end
@@ -268,8 +294,38 @@ function actQuoteFunc(law,engine,idx)
 
         end
     else
+        # now VPN
+        actNm=Symbol("action"*string(idx))
+        engineNm=Symbol(string(engine))
+        lawNm=Symbol("vpn")
+        quote
+            struct $actNm <: action
+                law::$lawNm
+                engine::$engineNm
+            end
+            global actionList
+            global lawList
+            myLaw=filter(x-> typeof(x)==$lawNm,lawList)[1]
+            myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
+            push!(actionList,$actNm(myLaw,myEngine))
+            function beforeAct(agt::agent,action::$actNm)
+                # agent creates a new alias an opts out 
+                agt.lastMask=agt.mask
+                agt.mask=aliasGen(true)
+                agt.lastAct=action
+            end
 
+            function afterAct(agt::agent,result::Bool,action::$actNm)
+                if !result
+                    agt.mask=agt.lastMask
+                    agt.lastMask=nothing
+                    agt.lastAct=nothing
+                else
+                    agt.lastAct=nothing
+                end
+            end
 
+        end
 
     end
     #println(actCnt)
@@ -277,24 +333,25 @@ end
 
 # we need a function that returns an array of terminal types
 
-function baseTypes(typ)
-    
-
-end
 
 
 function actionCombine()
     global actionList
+    global lawList
+    global engineList
     #actionList=action[]
     # get the list of all current laws
-    allLaws=vcat([nothing],subtypes(law))
-    allEngines=vcat(subtypes(hardEngine),subtypes(paramEngine))
+    allLaws=vcat([null],typeof.(lawList))
+    #allEngines=vcat(subtypes(hardEngine),subtypes(paramEngine))
+    allEngines=typeof.(engineList)
+    
     # now, an array of quotes
     qArray=[]
     actionTicker=0
-    for l in allLaws
-        for e in allEngines
+    for l in lawList
+        for e in engineList
             actionTicker=actionTicker+1
+            @show actQuoteFunc(l,e,actionTicker)
             push!(qArray,actQuoteFunc(l,e,actionTicker))
         end
     end
