@@ -15,7 +15,6 @@
 
 
 
-
 ### Model Description ####
 
 # Agents have preferences for privacy meaning their bliss point is somewhere between the 
@@ -68,51 +67,6 @@ println("Debug: Search Engine List ")
 println(engineList)
 
 for tick in 1:modRuns
-    # First, have all agents set themselves up. 
-    # this function gets rewritten depending on the actions the agents take
-    for t in 1:modTime
-        #println("Timing")
-        #println(tick)
-        #println(t)
-        # have agents search 
-        # randomize agt search amount 
-        searchCnt=rand(searchQty,agtCnt)
-        # randomize agent ordering
-        searchOrder=sample(1:agtCnt,agtCnt,replace=false)
-        for i in searchOrder
-            # we need an array for how long it took
-            searchWait=Int64[]
-            #println(searchCnt[i])
-            searchRes=search(agtList[i],searchCnt[i])
-            # now for each agent, we need to know the final target of the search result 
-            for res in searchRes
-            # update search engine records for the alias with the search target
-                update(res[4],agtList[i].mask,agtList[i].currEngine)
-                push!(searchWait,res[3])
-            end
-            # now update agent's history
-            agtList[i].history[t]=mean(searchWait)
-        end
-        
-    end
-    println("Loop Finished")
-    println("Current Tick")
-    println(tick)
-    # now, agents decide whether to maintain their current behavior or revert
-    if tick > 1
-        println("I am running")
-        for agt in agtList
-            if !isnothing(agt.lastAct)
-                println("Comparison")
-                result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
-                if result
-                    println("Behavior Change")
-                end
-                afterAct(agt,result,agt.lastAct)
-            end
-        end
-    end
-    # now, introduce new search engines if applicable
     if tick==10
         println("DuckDuckGo In")
         duckGen()
@@ -142,13 +96,61 @@ for tick in 1:modRuns
     end
     println("Tick")
     println(tick)
+
+    #println("Loop Finished")
+    #println("Current Tick")
+    #println(tick)
+    # now, agents decide whether to maintain their current behavior or revert
+    if tick > 2
+        println("I am running")
+        for agt in agtList
+            if !isnothing(agt.lastAct)
+                println("Comparison")
+                result=util(agt,agt.history[tick-1]) > util(agt,agt.history[tick-2])
+                if result
+                    println("Behavior Change")
+                    println(typeof(agt.currEngine))
+                end
+                afterAct(agt,result,agt.lastAct)
+            end
+        end
+    end
+
+    # have agents search 
+    # randomize agt search amount 
+    searchCnt=rand(searchQty,agtCnt)
+    # randomize agent ordering
+    searchOrder=sample(1:agtCnt,agtCnt,replace=false)
+    for i in searchOrder
+        # we need an array for how long it took
+        searchWait=Int64[]
+        #println(searchCnt[i])
+        #println("searching")
+        #println(agtList[i].agtNum)
+        #println(typeof(agtList[i].currEngine))
+        #println(typeof(agtList[i].prevEngine))
+        searchRes=search(agtList[i],searchCnt[i])
+        # now for each agent, we need to know the final target of the search result 
+        for res in searchRes
+        # update search engine records for the alias with the search target
+            update(res[4],agtList[i].mask,agtList[i].currEngine)
+            push!(searchWait,res[3])
+        end
+        # now update agent's history
+        agtList[i].history[tick]=mean(searchWait)
+    end
+        
+    
+    
+    # now, introduce new search engines if applicable
+    
     # now, run any scheduled agent actions from the previous step
     # we need a temporary array to hold the adjacent agents in the network
     # and their actions
     # if the same agent is the neighbor of more than one acting agent, we go 
     # with the first assigned action
-    println("action list")
-    println(length(actionList))
+    #println("action list")
+    #println(length(actionList))
     if length(actionList) > 0
         tmpAgts=agent[]
         tmpActs=action[]
@@ -158,6 +160,7 @@ for tick in 1:modRuns
             if isnothing(currAct)
                 # select an action at random
                 currAct=sample(actionList,1)[1]
+                println(currAct.engine)
                 beforeAct(currAgt,currAct)
             else
                 beforeAct(currAgt,currAct)
@@ -188,10 +191,10 @@ for tick in 1:modRuns
         newActCnt=min(rand(poissonDist,1)[1],agtCnt-length(agtActVec))
         remainingAgts=collect(setdiff(Set(agtList),Set(agtActVec)))
         newActAgts=sample(remainingAgts,newActCnt,replace=false)
-        println("How many exogenous actions?")
-        println(newActCnt)
-        println("Who will Act Exogenously?")
-        println(length(newActAgts))
+        #println("How many exogenous actions?")
+        #println(newActCnt)
+        #println("Who will Act Exogenously?")
+        #println(length(newActAgts))
 
         # now randomly select acts 
         newActs=sample(actionList,length(newActAgts),replace=true)
