@@ -5,3 +5,6 @@ function schedulePrint(argDict)
     end
 end
     
+function agtNumber(agt::agent)
+    return agt.agtNum
+end

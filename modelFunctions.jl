@@ -5,22 +5,24 @@ function takeAction(agt::agent)
     global scheduleActDict
 
     if isnothing(currentActDict[agt])
+        println("Not Acting")
         return false
     else
+        println("Acting")
         currAct=currentActDict[agt]
-        beforeAct(agtcurrAct,)
+        beforeAct(agt,currAct)
         # now, schedule actions for neighbors 
         global agtGraph
-        neighborNums=collect(neighbors(agtGraph,currAgt.agtNum))
+        neighborNums=collect(neighbors(agtGraph,agt.agtNum))
         agtVec=agent[]
         for n in neighborNums
             push!(agtVec,agtList[n])
         end
         # now, if the agent was previously scheduled to act next time
         # we do not overwrite this assignment 
-        for agt in agtVec
-            if isnothing(scheduleActDict[agt])
-                scheduleActDict[agt]=currAct
+        for vAgt in agtVec
+            if isnothing(scheduleActDict[vAgt])
+                scheduleActDict[vAgt]=currAct
             end
         end
         return true
@@ -37,11 +39,15 @@ function exogenousActs()
         global poissonDist
         exogCnt=rand(poissonDist,1)[1]
         exogAgts=sample(agtList,min(exogCnt,length(agtList)),replace=false)
+        println("Action Count")
+        println(length(exogAgts))
         # now, assign these agents actions if they do not already have them
         global actionList
         global scheduleActDict
+        println(agtNumber.(keys(scheduleActDict)))
         for agt in exogAgts
             if isnothing(scheduleActDict[agt])
+                println("Act Assigned")
                 newAct=sample(actionList,1)[1]
                 scheduleActDict[agt]=newAct
             end
@@ -78,10 +84,12 @@ end
 function reverseDecision(agt::agent)
     if !isnothing(agt.lastAct)
         println("Comparison")
+        global tick
         result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
         if result
             println("Behavior Change")
             println(typeof(agt.currEngine))
+            println(typeof(agt.prevEngine))
         end
         afterAct(agt,result,agt.lastAct)
     end
@@ -91,8 +99,12 @@ function resetSchedule()
     global currentActDict
     global scheduleActDict
     global agtList
-    currentActDict=scheduleActDict
+    println("New Debug")
     for agt in agtList
+        
+        println(typeof(currentActDict[agt]))
+        println(typeof(scheduleActDict[agt]))
+        currentActDict[agt]=scheduleActDict[agt]
         scheduleActDict[agt]=nothing
     end
 end

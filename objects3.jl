@@ -181,7 +181,8 @@ null=Null()
 function actQuoteFunc(law,engine,idx)
     # how many actions are there already?
     actNm=Symbol("action"*string(idx))
-    engineNm=Symbol(string(engine))
+    engineNm=Symbol(typeof(engine))
+    
     #println("Macro")
     #println(engineNm)
     if isnull(law)
@@ -195,6 +196,7 @@ function actQuoteFunc(law,engine,idx)
             global actionList
             global engineList
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
+            #myEngine=nothing
             push!(actionList,$actNm(null,myEngine))
 
             # we need the before act where the agent switches search engines
@@ -227,7 +229,7 @@ function actQuoteFunc(law,engine,idx)
         
     elseif typeof(law)==deletion
         actNm=Symbol("action"*string(idx))
-        engineNm=Symbol(string(engine))
+        engineNm=Symbol(typeof(engine))
         lawNm="deletion"
         quote
             struct $actNm <: action
@@ -239,7 +241,7 @@ function actQuoteFunc(law,engine,idx)
             myLaw=filter(x-> typeof(x)==$lawNm,lawList)[1]
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
             push!(actionList,$actNm(null,myEngine))
-            function beforeAct(agt:agent,action::$actNm)
+            function beforeAct(agt::agent,action::$actNm)
                 action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
                 action.engine.aliasData[agt.mask]=[]
                 agt.lastAct=action
@@ -259,7 +261,7 @@ function actQuoteFunc(law,engine,idx)
         end
     elseif typeof(law)==sharing
         actNm=Symbol("action"*string(idx))
-        engineNm=Symbol(string(engine))
+        engineNm=Symbol(typeof(engine))
         lawNm="sharing"
         quote
             struct $actNm <: action
@@ -296,7 +298,7 @@ function actQuoteFunc(law,engine,idx)
     else
         # now VPN
         actNm=Symbol("action"*string(idx))
-        engineNm=Symbol(string(engine))
+        engineNm=Symbol(typeof(engine))
         lawNm=Symbol("vpn")
         quote
             struct $actNm <: action
@@ -306,7 +308,9 @@ function actQuoteFunc(law,engine,idx)
             global actionList
             global lawList
             myLaw=filter(x-> typeof(x)==$lawNm,lawList)[1]
+            #println(myLaw)
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
+            #println(myEngine)
             push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
                 # agent creates a new alias an opts out 
@@ -341,17 +345,19 @@ function actionCombine()
     global engineList
     #actionList=action[]
     # get the list of all current laws
-    allLaws=vcat([null],typeof.(lawList))
+    allLaws=vcat([Null()],typeof.(lawList))
     #allEngines=vcat(subtypes(hardEngine),subtypes(paramEngine))
     allEngines=typeof.(engineList)
-    
+    #println("Debug")
+    #println(allLaws)
+    #println(allEngines)
     # now, an array of quotes
     qArray=[]
     actionTicker=0
-    for l in lawList
+    for l in allLaws
         for e in engineList
             actionTicker=actionTicker+1
-            @show actQuoteFunc(l,e,actionTicker)
+            #actQuoteFunc(l,e,actionTicker)
             push!(qArray,actQuoteFunc(l,e,actionTicker))
         end
     end

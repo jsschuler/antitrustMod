@@ -65,10 +65,11 @@ for agt in agtList
     currentActDict[agt]=nothing
     scheduleActDict[agt]=nothing
 end
-
-for tick in 1:modRuns
+tick=0
+for ticker in 1:modRuns
     # principle 1: agents search no matter what 
-
+    global tick
+    tick=tick + 1
     # Step 0: new laws or search engines are introduced.
      # first, introduce any new laws or search engines 
      if tick==10
@@ -80,30 +81,31 @@ for tick in 1:modRuns
     println(tick)
     # now introduce new laws if applicable 
     if tick==15
-        println("VPN In")
-        vpnGen(tick)
-        @actionGen()
+        #println("VPN In")
+        #vpnGen(tick)
+        #@actionGen()
     end
     println("Tick")
     println(tick)
     if tick==20
-        println("Deletion In")
-        deletionGen(tick)
-        @actionGen()
+        #println("Deletion In")
+        #deletionGen(tick)
+        #@actionGen()
     end
     println("Tick")
     println(tick)
     if tick==30
-        println("Sharing In")
-        sharingGen(tick)
-        @actionGen()
+        #println("Sharing In")
+        #sharingGen(tick)
+        #@actionGen()
     end
     println("Action List")
     println(length(actionList))
+    
     # Step 1: agents previously scheduled to act take action
     # some of these agents were chosen exogenously, 
     # some because they were neighbors of agents that did act 
-    for agt in sample(agtList,length(agtList),replace=false)
+    for agt in agtList
         takeAction(agt)
     end
 
