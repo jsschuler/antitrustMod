@@ -8,3 +8,8 @@ end
 function agtNumber(agt::agent)
     return agt.agtNum
 end
+
+function actTarget(action)
+    println("Target")
+    println(typeof(action.engine))
+end

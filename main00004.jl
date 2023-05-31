@@ -65,6 +65,10 @@ for agt in agtList
     currentActDict[agt]=nothing
     scheduleActDict[agt]=nothing
 end
+# we need an array to store the already generated structs to avoid redefining them 
+structTuples=Set([])
+
+
 tick=0
 for ticker in 1:modRuns
     # principle 1: agents search no matter what 
@@ -81,23 +85,23 @@ for ticker in 1:modRuns
     println(tick)
     # now introduce new laws if applicable 
     if tick==15
-        #println("VPN In")
-        #vpnGen(tick)
-        #@actionGen()
+        println("VPN In")
+        vpnGen(tick)
+        @actionGen()
     end
     println("Tick")
     println(tick)
     if tick==20
-        #println("Deletion In")
-        #deletionGen(tick)
-        #@actionGen()
+        println("Deletion In")
+        deletionGen(tick)
+        @actionGen()
     end
     println("Tick")
     println(tick)
     if tick==30
-        #println("Sharing In")
-        #sharingGen(tick)
-        #@actionGen()
+        println("Sharing In")
+        sharingGen(tick)
+        @actionGen()
     end
     println("Action List")
     println(length(actionList))

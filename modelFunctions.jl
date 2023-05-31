@@ -10,6 +10,8 @@ function takeAction(agt::agent)
     else
         println("Acting")
         currAct=currentActDict[agt]
+        println(typeof(currAct.law))
+        println(typeof(currAct.engine))
         beforeAct(agt,currAct)
         # now, schedule actions for neighbors 
         global agtGraph
@@ -35,21 +37,23 @@ function exogenousActs()
     if length(actionList)==0
         return false
     else
-        println("Exogenous!")
+        #println("Exogenous!")
         global poissonDist
         exogCnt=rand(poissonDist,1)[1]
         exogAgts=sample(agtList,min(exogCnt,length(agtList)),replace=false)
-        println("Action Count")
-        println(length(exogAgts))
+        #println("Action Count")
+        #println(length(exogAgts))
+        #println(typeof.(actionList))
         # now, assign these agents actions if they do not already have them
         global actionList
         global scheduleActDict
-        println(agtNumber.(keys(scheduleActDict)))
+        #println(agtNumber.(keys(scheduleActDict)))
         for agt in exogAgts
             if isnothing(scheduleActDict[agt])
-                println("Act Assigned")
+                #println("Act Assigned")
                 newAct=sample(actionList,1)[1]
                 scheduleActDict[agt]=newAct
+                #actTarget(newAct)
             end
         end
         return true
@@ -87,9 +91,9 @@ function reverseDecision(agt::agent)
         global tick
         result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
         if result
-            println("Behavior Change")
-            println(typeof(agt.currEngine))
-            println(typeof(agt.prevEngine))
+            #println("Behavior Change")
+            #println(typeof(agt.currEngine))
+            #println(typeof(agt.prevEngine))
         end
         afterAct(agt,result,agt.lastAct)
     end
@@ -99,11 +103,11 @@ function resetSchedule()
     global currentActDict
     global scheduleActDict
     global agtList
-    println("New Debug")
+    #println("New Debug")
     for agt in agtList
         
-        println(typeof(currentActDict[agt]))
-        println(typeof(scheduleActDict[agt]))
+        #println(typeof(currentActDict[agt]))
+        #println(typeof(scheduleActDict[agt]))
         currentActDict[agt]=scheduleActDict[agt]
         scheduleActDict[agt]=nothing
     end

@@ -202,16 +202,22 @@ function actQuoteFunc(law,engine,idx)
             # we need the before act where the agent switches search engines
             function beforeAct(agt::agent,action::$actNm)
                 # first, check if the agent is already using this engine 
+                println("Before Act")
+                println(typeof(agt.currEngine))
+                println(typeof(agt.prevEngine))
                 if agt.currEngine!=action.engine
                     agt.prevEngine=agt.currEngine
-                    agt.currEngine==action.engine
+                    agt.currEngine=action.engine
                     agt.lastAct=action
                 end
+                println(typeof(agt.currEngine))
+                println(typeof(agt.prevEngine))
             end
             # In the after act, the agent makes the change permanent if it prefers it
             function afterAct(agt::agent,result::Bool,action::$actNm)
                 # again, first check if the agent was already using the action 
                 # targeted search engine
+                #actTarget(action)
                 if !isnothing(agt.lastAct)
                     if !result
                         agt.currEngine=agt.prevEngine
@@ -226,11 +232,10 @@ function actQuoteFunc(law,engine,idx)
 
 
         end
-        
     elseif typeof(law)==deletion
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(typeof(engine))
-        lawNm="deletion"
+        lawNm=Symbol("deletion")
         quote
             struct $actNm <: action
                 law::$lawNm
@@ -262,7 +267,7 @@ function actQuoteFunc(law,engine,idx)
     elseif typeof(law)==sharing
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(typeof(engine))
-        lawNm="sharing"
+        lawNm=Symbol("sharing")
         quote
             struct $actNm <: action
                 law::$lawNm
@@ -345,7 +350,7 @@ function actionCombine()
     global engineList
     #actionList=action[]
     # get the list of all current laws
-    allLaws=vcat([Null()],typeof.(lawList))
+    allLaws=vcat([Null()],lawList)
     #allEngines=vcat(subtypes(hardEngine),subtypes(paramEngine))
     allEngines=typeof.(engineList)
     #println("Debug")
@@ -353,12 +358,20 @@ function actionCombine()
     #println(allEngines)
     # now, an array of quotes
     qArray=[]
-    actionTicker=0
+    actionTicker=length(structTuples)
     for l in allLaws
         for e in engineList
             actionTicker=actionTicker+1
-            #actQuoteFunc(l,e,actionTicker)
-            push!(qArray,actQuoteFunc(l,e,actionTicker))
+
+            println("Debug")
+            println(typeof(l))
+            println(typeof(e))
+            @show actQuoteFunc(l,e,actionTicker)
+            global structTuples
+            if ! ((l,e)  in structTuples)
+                push!(qArray,actQuoteFunc(l,e,actionTicker))
+                push!(structTuples,(l,e))
+            end
         end
     end
     return qArray
