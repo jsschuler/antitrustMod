@@ -5,13 +5,13 @@ function takeAction(agt::agent)
     global scheduleActDict
 
     if isnothing(currentActDict[agt])
-        println("Not Acting")
+        #println("Not Acting")
         return false
     else
-        println("Acting")
+        #println("Acting")
         currAct=currentActDict[agt]
-        println(typeof(currAct.law))
-        println(typeof(currAct.engine))
+        #println(typeof(currAct.law))
+        #println(typeof(currAct.engine))
         beforeAct(agt,currAct)
         # now, schedule actions for neighbors 
         global agtGraph
@@ -89,11 +89,16 @@ function reverseDecision(agt::agent)
     if !isnothing(agt.lastAct)
         println("Comparison")
         global tick
+        println(typeof(agt.lastAct))
+        println("old util")
+        println(util(agt,agt.history[tick]))
+        println("new util")
+        println(util(agt,agt.history[tick-1]))
         result=util(agt,agt.history[tick]) > util(agt,agt.history[tick-1])
         if result
-            #println("Behavior Change")
-            #println(typeof(agt.currEngine))
-            #println(typeof(agt.prevEngine))
+            println("Behavior Change")
+            println(typeof(agt.currEngine))
+            println(typeof(agt.prevEngine))
         end
         afterAct(agt,result,agt.lastAct)
     end

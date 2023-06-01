@@ -49,12 +49,16 @@ function agentOutlineColor(agt::agent)
     if !isnothing(agt.lastAct)
         if typeof(agt.lastAct.law)==Nothing
             lineColor=RGBA(0,0,0,1)
-        elseif typeof(agt.lastAct.law)==deletion 
+        elseif typeof(agt.lastAct.law)==deletion | deletionDict[agt]
             lineColor=RGBA(0,0,0,1)
-        elseif typeof(agt.lastAct.law)==sharing
+        elseif typeof(agt.lastAct.law)==sharing | sharingDict[agt]
             lineColor=RGBA(.562,.0,.284,1)
         end
-    else 
+    elseif  deletionDict[agt]
+        lineColor=RGBA(0,0,0,1)
+    elseif sharingDict[agt]
+        lineColor=RGBA(.562,.0,.284,1)
+    else
         lineColor=RGBA(0,0,0,1)
     end
     return lineColor
@@ -62,15 +66,19 @@ end
 
 
 function agentOutlineWidth(agt::agent)
+    global deletionDict
+    global sharingDict
     if !isnothing(agt.lastAct)
         if typeof(agt.lastAct.law)==Nothing
             lineWidth=0.0
-        elseif typeof(agt.lastAct.law)==deletion 
-            lineWidth=.1
-        elseif typeof(agt.lastAct.law)==sharing
-            lineWidth=.1
+        elseif typeof(agt.lastAct.law)==deletion | deletionDict[agt]
+            lineWidth=1.0
+        elseif typeof(agt.lastAct.law)==sharing | sharingDict[agt]
+            lineWidth=1.0
         end
-    else 
+    elseif deletionDict[agt] | sharingDict[agt]
+        lineWidth=1.0
+    else
         lineWidth=0.0
     end
     return lineWidth

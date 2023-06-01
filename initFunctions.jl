@@ -153,4 +153,3 @@ function genAgents()
     end
 end
 
-# now, we need to generate the network linking the agents 

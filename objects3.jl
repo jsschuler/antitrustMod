@@ -186,6 +186,7 @@ function actQuoteFunc(law,engine,idx)
     #println("Macro")
     #println(engineNm)
     if isnull(law)
+        #println("NULL")
         quote
             struct $actNm <: action
                 law::Null
@@ -202,16 +203,16 @@ function actQuoteFunc(law,engine,idx)
             # we need the before act where the agent switches search engines
             function beforeAct(agt::agent,action::$actNm)
                 # first, check if the agent is already using this engine 
-                println("Before Act")
-                println(typeof(agt.currEngine))
-                println(typeof(agt.prevEngine))
+                #println("Before Act")
+                #println(typeof(agt.currEngine))
+                #println(typeof(agt.prevEngine))
                 if agt.currEngine!=action.engine
                     agt.prevEngine=agt.currEngine
                     agt.currEngine=action.engine
                     agt.lastAct=action
                 end
-                println(typeof(agt.currEngine))
-                println(typeof(agt.prevEngine))
+                #println(typeof(agt.currEngine))
+                #println(typeof(agt.prevEngine))
             end
             # In the after act, the agent makes the change permanent if it prefers it
             function afterAct(agt::agent,result::Bool,action::$actNm)
@@ -233,6 +234,7 @@ function actQuoteFunc(law,engine,idx)
 
         end
     elseif typeof(law)==deletion
+        #println("deletion")
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(typeof(engine))
         lawNm=Symbol("deletion")
@@ -245,7 +247,7 @@ function actQuoteFunc(law,engine,idx)
             global lawList
             myLaw=filter(x-> typeof(x)==$lawNm,lawList)[1]
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
-            push!(actionList,$actNm(null,myEngine))
+            push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
                 action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
                 action.engine.aliasData[agt.mask]=[]
@@ -255,16 +257,18 @@ function actQuoteFunc(law,engine,idx)
             function afterAct(agt::agent,result::Bool,action::$actNm)
                 if result
                     action.engine.aliasHld[agt.mask]=[]
-                    act.lastAct=nothing
+                    agt.lastAct=nothing
+                    global deletionDict
+                    deletionDict[agt]=true
                 else
                     action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
                     action.engine.aliasHld[agt.mask]=[]
-                    act.lastAct=nothing
+                    agt.lastAct=nothing
                 end
             end
-
         end
     elseif typeof(law)==sharing
+        #println("sharing")
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(typeof(engine))
         lawNm=Symbol("sharing")
@@ -300,8 +304,9 @@ function actQuoteFunc(law,engine,idx)
             end
 
         end
-    else
+    elseif typeof(law)==vpn
         # now VPN
+        #println("vpn")
         actNm=Symbol("action"*string(idx))
         engineNm=Symbol(typeof(engine))
         lawNm=Symbol("vpn")
@@ -329,6 +334,8 @@ function actQuoteFunc(law,engine,idx)
                     agt.mask=agt.lastMask
                     agt.lastMask=nothing
                     agt.lastAct=nothing
+                    global sharingDict
+                    sharingDict[agt]=true
                 else
                     agt.lastAct=nothing
                 end
@@ -362,14 +369,15 @@ function actionCombine()
     for l in allLaws
         for e in engineList
             actionTicker=actionTicker+1
-
-            println("Debug")
-            println(typeof(l))
-            println(typeof(e))
-            @show actQuoteFunc(l,e,actionTicker)
+            #println("Debug")
+            #println(typeof(l))
+            #println(typeof(e))
+            #@show actQuoteFunc(l,e,actionTicker)
             global structTuples
             if ! ((l,e)  in structTuples)
+                #println(((l),e))
                 push!(qArray,actQuoteFunc(l,e,actionTicker))
+                #@show actQuoteFunc(l,e,actionTicker)
                 push!(structTuples,(l,e))
             end
         end

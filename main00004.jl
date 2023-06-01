@@ -12,6 +12,8 @@
 # are currently doing. 
 # also, change the VPN logic such that if an agent takes the action twice, they stop using a vpn 
 
+# Update: did I do this? 
+# There is still some weirdness around agents sharing data with their own search engine
 
 
 
@@ -56,14 +58,19 @@ include("graphPlot.jl")
 include("modelFunctions.jl")
 include("displayFunctions.jl")
 
-# now, we need a couple of globaln dictionaries 
+# now, we need afour of global dictionaries 
 currentActDict=Dict{agent,Union{Nothing,Null,action}}()
 scheduleActDict=Dict{agent,Union{Nothing,Null,action}}()
+deletionDict=Dict{agent,Bool}()
+sharingDict=Dict{agent,Bool}()
+
 
 # initialize all agents actions to nothing
 for agt in agtList
     currentActDict[agt]=nothing
     scheduleActDict[agt]=nothing
+    deletionDict[agt]=false
+    sharingDict[agt]=false
 end
 # we need an array to store the already generated structs to avoid redefining them 
 structTuples=Set([])
@@ -77,34 +84,34 @@ for ticker in 1:modRuns
     # Step 0: new laws or search engines are introduced.
      # first, introduce any new laws or search engines 
      if tick==10
-        println("DuckDuckGo In")
+        #println("DuckDuckGo In")
         duckGen()
         @actionGen()
     end
-    println("Tick")
-    println(tick)
+    #println("Tick")
+    #println(tick)
     # now introduce new laws if applicable 
     if tick==15
-        println("VPN In")
-        vpnGen(tick)
-        @actionGen()
+        #println("VPN In")
+        #vpnGen(tick)
+        #@actionGen()
     end
-    println("Tick")
-    println(tick)
+    #println("Tick")
+    #println(tick)
     if tick==20
-        println("Deletion In")
-        deletionGen(tick)
-        @actionGen()
+        #println("Deletion In")
+        #deletionGen(tick)
+        #@actionGen()
     end
-    println("Tick")
-    println(tick)
+    #println("Tick")
+    #println(tick)
     if tick==30
-        println("Sharing In")
+        #println("Sharing In")
         sharingGen(tick)
         @actionGen()
     end
-    println("Action List")
-    println(length(actionList))
+    #println("Action List")
+    #println(length(actionList))
     
     # Step 1: agents previously scheduled to act take action
     # some of these agents were chosen exogenously, 
@@ -129,4 +136,12 @@ for ticker in 1:modRuns
     resetSchedule()
     # now plot data
     svgGen(tick)
+end
+println("Deletion")
+for k in keys(deletionDict)
+    println(deletionDict[k])
+end
+println("Sharing")
+for k in keys(sharingDict)
+    println(sharingDict[k])
 end
