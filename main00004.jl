@@ -105,7 +105,7 @@ for ticker in 1:modRuns
     end
     #println("Tick")
     #println(tick)
-    if tick==30
+    if tick==16
         #println("Sharing In")
         sharingGen(tick)
         @actionGen()

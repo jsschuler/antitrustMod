@@ -249,21 +249,25 @@ function actQuoteFunc(law,engine,idx)
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
             push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
-                action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
-                action.engine.aliasData[agt.mask]=[]
-                agt.lastAct=action
+                if agt.engine==action.engine
+                    action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
+                    action.engine.aliasData[agt.mask]=[]
+                    agt.lastAct=action
+                end
             end
 
             function afterAct(agt::agent,result::Bool,action::$actNm)
-                if result
-                    action.engine.aliasHld[agt.mask]=[]
-                    agt.lastAct=nothing
-                    global deletionDict
-                    deletionDict[agt]=true
-                else
-                    action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
-                    action.engine.aliasHld[agt.mask]=[]
-                    agt.lastAct=nothing
+                if !isnothing(agt.lastAct)
+                    if result
+                        action.engine.aliasHld[agt.mask]=[]
+                        agt.lastAct=nothing
+                        global deletionDict
+                        deletionDict[agt]=true
+                    else
+                        action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
+                        action.engine.aliasHld[agt.mask]=[]
+                        agt.lastAct=nothing
+                    end
                 end
             end
         end
@@ -283,26 +287,27 @@ function actQuoteFunc(law,engine,idx)
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
             push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
-                # agent generates a new alias
-                agt.alias=aliasGen(true)
-                
-                # share data from the agent's current search engine to its target search engine. 
-                action.engine.aliasData[agt.mask]=agt.currEngine.aliasData[agt.mask]
-                agt.prevEngine=agt.currEngine
-                agt.currEngine=action.engine
-                agt.lastAct=action
-            end
-
-            function afterAct(agt::agent,result::Bool,action::$actNm)
-                if !result
-                    agt.currEngine=agt.prevEngine
-                    agt.prevEngine=nothing
-                    agt.lastAct=nothing
-                else
-                    agt.lastAct=nothing
+                if agt.engine!=action.engine
+                    println("different")
+                    # share data from the agent's current search engine to its target search engine. 
+                    action.engine.aliasData[agt.mask]=agt.currEngine.aliasData[agt.mask]
+                    agt.prevEngine=agt.currEngine
+                    agt.currEngine=action.engine
+                    agt.lastAct=action
                 end
             end
 
+            function afterAct(agt::agent,result::Bool,action::$actNm)
+                if !isnothing(agt.lastAct)
+                    if !result
+                        agt.currEngine=agt.prevEngine
+                        agt.prevEngine=nothing
+                        agt.lastAct=nothing
+                    else
+                        agt.lastAct=nothing
+                    end
+                end
+            end
         end
     elseif typeof(law)==vpn
         # now VPN
