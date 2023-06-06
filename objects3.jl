@@ -34,7 +34,7 @@ allAlias=alias[]
 function aliasGen(optOut::Bool)
     global allAlias
     newAlias=alias(optOut)
-    push!(allAlias)
+    push!(allAlias,newAlias)
     return newAlias
 end
 # we need a basic agent object
@@ -249,7 +249,7 @@ function actQuoteFunc(law,engine,idx)
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
             push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
-                if agt.engine==action.engine
+                if agt.currEngine==action.engine
                     action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
                     action.engine.aliasData[agt.mask]=[]
                     agt.lastAct=action
@@ -263,6 +263,8 @@ function actQuoteFunc(law,engine,idx)
                         agt.lastAct=nothing
                         global deletionDict
                         deletionDict[agt]=true
+                        # and give the agent a new mask with an optOut
+                        #agt.mask=aliasGen(true)
                     else
                         action.engine.aliasData[agt.mask]=action.engine.aliasHld[agt.mask]
                         action.engine.aliasHld[agt.mask]=[]

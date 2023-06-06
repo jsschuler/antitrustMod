@@ -85,8 +85,8 @@ for ticker in 1:modRuns
      # first, introduce any new laws or search engines 
      if tick==10
         #println("DuckDuckGo In")
-        duckGen()
-        @actionGen()
+        #duckGen()
+        #@actionGen()
     end
     #println("Tick")
     #println(tick)
@@ -100,15 +100,15 @@ for ticker in 1:modRuns
     #println(tick)
     if tick==20
         #println("Deletion In")
-        #deletionGen(tick)
-        #@actionGen()
+        deletionGen(tick)
+        @actionGen()
     end
     #println("Tick")
     #println(tick)
     if tick==16
         #println("Sharing In")
-        sharingGen(tick)
-        @actionGen()
+        #sharingGen(tick)
+        #@actionGen()
     end
     #println("Action List")
     #println(length(actionList))
@@ -141,7 +141,7 @@ println("Deletion")
 for k in keys(deletionDict)
     println(deletionDict[k])
 end
-println("Sharing")
-for k in keys(sharingDict)
-    println(sharingDict[k])
-end
+#println("Sharing")
+#for k in keys(sharingDict)
+#    println(sharingDict[k])
+#end
