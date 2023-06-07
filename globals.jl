@@ -5,7 +5,12 @@ using InteractiveUtils
 using Graphs 
 using Random
 using JLD2
+using Dates
 
+# now select a seed 
+seed=rand(Int(1):Int(10000))
+Random.seed!(seed)
+strSeed=string(seed)
 ## global parameters
 # now, we need the parameters for the Exponential distributions generating the two Beta parameters for each agent 
 agtCnt=50
@@ -32,7 +37,7 @@ betaGen::Exponential{Float64}=Exponential(5)
 # this also comes from a beta random variable
 # how many agents care a lot about privacy?
 # higher value means fewer care 
-privacyVal::Float64=rand(Uniform(1.1,50),1)[1]
+privacyVal::Float64=rand(Uniform(1.1,5),1)[1]
 privacyBeta::Beta{Float64}=Beta(1.0,privacyVal)
 # how close does the offered search result have to be before the agent accepts it?
 searchResolution::Float64=.05

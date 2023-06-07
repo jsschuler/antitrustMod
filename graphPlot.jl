@@ -94,7 +94,11 @@ end
 function svgGen(tick::Int64)
     global agtList
     #global curLayout
-    draw(SVG("../plots/graph"*string(tick)*".svg", 16cm, 16cm), gplot(agtGraph,layout=spectral_layout,
+    #run$strSeed-$currTime
+    global strSeed
+    global currTime
+    loc="../antiTrustPlots/run"*strSeed*"-"*currTime
+    draw(SVG(loc*"/graph"*string(tick)*".svg", 16cm, 16cm), gplot(agtGraph,layout=spectral_layout,
                                                    nodefillc=agentBaseColor.(agtList),
                                                    nodestrokec=agentOutlineColor.(agtList),
                                                    nodestrokelw=agentOutlineWidth.(agtList)))

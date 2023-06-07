@@ -375,13 +375,14 @@ function actionCombine()
     actionTicker=length(structTuples)
     for l in allLaws
         for e in engineList
-            actionTicker=actionTicker+1
+            
             #println("Debug")
             #println(typeof(l))
             #println(typeof(e))
             #@show actQuoteFunc(l,e,actionTicker)
             global structTuples
             if ! ((l,e)  in structTuples)
+                actionTicker=actionTicker+1
                 #println(((l),e))
                 push!(qArray,actQuoteFunc(l,e,actionTicker))
                 #@show actQuoteFunc(l,e,actionTicker)

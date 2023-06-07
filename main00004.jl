@@ -17,6 +17,8 @@
 
 
 
+
+
 ### Model Description ####
 
 # Agents have preferences for privacy meaning their bliss point is somewhere between the 
@@ -34,6 +36,11 @@
 
 # include global parameters
 include("globals.jl")
+
+# make a directory for the svg files
+currTime=string(now())
+run(`mkdir ../antiTrustPlots/run$strSeed-$currTime`)
+
 
 # let's test some objects
 include("objects3.jl")
@@ -75,6 +82,12 @@ end
 # we need an array to store the already generated structs to avoid redefining them 
 structTuples=Set([])
 
+# order of introdudction, 
+
+# Duck Duck Go must be introduced before data sharing 
+
+
+
 
 tick=0
 for ticker in 1:modRuns
@@ -83,29 +96,29 @@ for ticker in 1:modRuns
     tick=tick + 1
     # Step 0: new laws or search engines are introduced.
      # first, introduce any new laws or search engines 
-     if tick==10
-        #println("DuckDuckGo In")
-        #duckGen()
-        #@actionGen()
+     if tick==30
+        println("DuckDuckGo In")
+        duckGen()
+        @actionGen()
     end
     #println("Tick")
     #println(tick)
     # now introduce new laws if applicable 
     if tick==15
-        #println("VPN In")
-        #vpnGen(tick)
-        #@actionGen()
+        println("VPN In")
+        vpnGen(tick)
+        @actionGen()
     end
     #println("Tick")
     #println(tick)
     if tick==20
         #println("Deletion In")
-        deletionGen(tick)
-        @actionGen()
+        #deletionGen(tick)
+        #@actionGen()
     end
     #println("Tick")
     #println(tick)
-    if tick==16
+    if tick==31
         #println("Sharing In")
         #sharingGen(tick)
         #@actionGen()
