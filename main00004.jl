@@ -105,23 +105,23 @@ for ticker in 1:modRuns
     #println(tick)
     # now introduce new laws if applicable 
     if tick==15
-        println("VPN In")
-        vpnGen(tick)
-        @actionGen()
+        #println("VPN In")
+        #vpnGen(tick)
+        #@actionGen()
     end
     #println("Tick")
     #println(tick)
     if tick==20
         #println("Deletion In")
-        #deletionGen(tick)
-        #@actionGen()
+        deletionGen(tick)
+        @actionGen()
     end
     #println("Tick")
     #println(tick)
     if tick==31
         #println("Sharing In")
-        #sharingGen(tick)
-        #@actionGen()
+        sharingGen(tick)
+        @actionGen()
     end
     #println("Action List")
     #println(length(actionList))
