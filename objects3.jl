@@ -307,6 +307,8 @@ function actQuoteFunc(law,engine,idx)
                         agt.lastAct=nothing
                     else
                         agt.lastAct=nothing
+                        global sharingDict
+                        sharingDict[agt]=true
                     end
                 end
             end
@@ -341,8 +343,6 @@ function actQuoteFunc(law,engine,idx)
                     agt.mask=agt.lastMask
                     agt.lastMask=nothing
                     agt.lastAct=nothing
-                    global sharingDict
-                    sharingDict[agt]=true
                 else
                     agt.lastAct=nothing
                 end

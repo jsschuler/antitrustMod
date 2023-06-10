@@ -52,12 +52,14 @@ function agentOutlineColor(agt::agent)
         elseif typeof(agt.lastAct.law)==deletion | deletionDict[agt]
             lineColor=RGBA(0,0,0,1)
         elseif typeof(agt.lastAct.law)==sharing | sharingDict[agt]
+            println("Here 1")
             lineColor=RGBA(.562,.0,.284,1)
         end
     elseif  deletionDict[agt]
         lineColor=RGBA(0,0,0,1)
     elseif sharingDict[agt]
         lineColor=RGBA(.562,.0,.284,1)
+        println("Here 2")
     else
         lineColor=RGBA(0,0,0,1)
     end
