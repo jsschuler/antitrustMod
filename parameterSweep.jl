@@ -1,5 +1,6 @@
 cores=16
 using Distributed
+using Combinatorics
 @everywhere using DataFrames
 @everywhere using Distributions
 @everywhere using InteractiveUtils
@@ -180,8 +181,8 @@ end
 
 # now generate the data structure for the parameter sweep
 
-sweeps=1000
-reps=10
+sweeps=100
+reps=5
 
 # generate a seed 
 seed1=sort(repeat(rand(DiscreteUniform(1,10000),sweeps),reps))
@@ -231,7 +232,36 @@ ctrlFrame[!,"complete"]=repeat([false],sweeps*reps)
 #global vpnTick=paramVec[7]
 #global deletionTick=paramVec[8]
 #global sharingTick=paramVec[9]
-#global modRuns=paramVec[10]
+
+
+# rule: sharing must come after Duck Duck Go
+# duck duck go always enters eventually 
+# thus, we choose the combinations of vpn, deletion, sharing
+# thus, enumerate the combinations
+# Duck Duck Go: 1 
+# vpn :2
+# deletion :3 
+# sharing :4
+introCombos=lpad.(string.(1:1:2^4, base = 2),4,"0")
+
+allOrders=[]
+for combo in introCombos
+    currOrder=[]
+    for k in 1:length(combo)
+        #println(SubString(combo,k,k))
+        if SubString(combo,k,k)=="1"
+            push!(currOrder,k)
+        end
+    end
+    for perm in  collect(permutations(currOrder))
+        push!(allOrders,perm)
+    end
+end
+
+
+# now there are 4! orders in which we can introduce the major actions 
+perms = collect(permutations([1,2,3,4]))
+# we will iterate these and then drop cases where 
 
 
 
