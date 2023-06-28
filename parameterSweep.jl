@@ -1,7 +1,6 @@
-
+cores=16
 using Distributed
-
-
+@everywhere using DataFrames
 @everywhere using Distributions
 @everywhere using InteractiveUtils
 @everywhere using Graphs 
@@ -9,6 +8,25 @@ using Distributed
 @everywhere using JLD2
 @everywhere using Dates
 # this code runs the parameter sweep
+
+# declare global variables 
+@everywhere begin 
+    privacyVal::Float64=0.1
+    privacyBeta::Beta{Float64}=Beta(1.0,privacyVal)
+    # how close does the offered search result have to be before the agent accepts it?
+    searchResolution::Float64=.05
+    # we need a Poisson process for how many agents act exogenously 
+    switchPct::Float64=.2
+    agtCnt::Int64=100
+    # set the Graph structure
+    pctConnected::Float64=.2
+    expDegree::Int64=floor(Int64,pctConnected*agtCnt)
+    β::Float64=.5
+    agtGraph=watts_strogatz(agtCnt, expDegree, β)
+    # Finally, we need a Poisson parameter to how much agents search
+    searchQty=Poisson{Int64}(4.0)
+end
+
 
 @everywhere include("objects3.jl")
 
@@ -30,25 +48,33 @@ using Distributed
 @everywhere include("modelFunctions.jl")
 @everywhere include("displayFunctions.jl")
 
+@everywhere begin
+    currentActDict=Dict{agent,Union{Nothing,Null,action}}()
+    scheduleActDict=Dict{agent,Union{Nothing,Null,action}}()
+    deletionDict=Dict{agent,Bool}()
+    sharingDict=Dict{agent,Bool}()
+end
+
+
 
 
 function ParameterSweep(paramVec)
-    global privacyVal::Float64=paramVec[1]
-    global privacyBeta::Beta{Float64}=Beta(1.0,privacyVal)
+    Random.seed!(paramVec[2])
+
+    privacyVal=paramVec[5]
+    global privacyBeta=Beta(1.0,privacyVal)
     # how close does the offered search result have to be before the agent accepts it?
-    global searchResolution::Float64=.05
+    global searchResolution=paramVec[6]
     # we need a Poisson process for how many agents act exogenously 
-    global switchPct::Float64=paramVec[2]
-    global agtCnt=paramVec[3]
-    # and a probability distribution for how much agents search 
-    global searchCountDist::NegativeBinomial{Float64}=NegativeBinomial(1.0,.1)
+    global switchPct=paramVec[7]
+    global agtCnt=paramVec[8]
     # set the Graph structure
-    global pctConnected=paramVec[4]
+    global pctConnected=paramVec[9]
     global expDegree=floor(Int64,pctConnected*agtCnt)
-    global β=.5
+    global β=paramVec[9]
     global agtGraph=watts_strogatz(agtCnt, expDegree, β)
     # Finally, we need a Poisson parameter to how much agents search
-    global searchQty=Poisson{Int64}(paramVec[5])
+    global searchQty=Poisson{Int64}(paramVec[10])
 
     # get a string to identify this run
     currTime=string(now())
@@ -149,34 +175,93 @@ function ParameterSweep(paramVec)
         # now plot data
         svgGen(tick)
     end
-
+    return key
 end
 
 # now generate the data structure for the parameter sweep
 
 sweeps=1000
+reps=10
+
+# generate a seed 
+seed1=sort(repeat(rand(DiscreteUniform(1,10000),sweeps),reps))
+seed2=rand(DiscreteUniform(1,10000),sweeps*reps)
 
 # how many agents care a lot about privacy?
 # higher value means fewer care 
-privacyVal=rand(Uniform(1.1,5),sweeps)
-privacyBeta=Beta.(1.0,privacyVal)
+privacyValVec=sort(repeat(rand(Uniform(1.1,30),sweeps),reps))
+#privacyBeta=Beta.(1.0,privacyVal)
 # how close does the offered search result have to be before the agent accepts it?
-searchResolution::Float64=.05
+searchResolutionVec=repeat([.05],sweeps*reps)
 # we need a Poisson process for how many agents act exogenously 
-switchPct=rand(Uniform(0.01,0.2),sweeps)
-poissonDist=Poisson.(switchPct*agtCnt)
+switchPctVec=sort(repeat(rand(Uniform(0.01,0.2),sweeps),reps))
+agtCntVec=sort(repeat(rand(DiscreteUniform(1000,10000),sweeps),reps))
+#poissonDist=sort(repeat(Poisson.(switchPct.*agtCnt),reps))
 # and a probability distribution for how much agents search 
 # set the Graph structure
-pctConnected=rand(Uniform(.05,.25),sweeps)
-expDegree=floor.(Int64,pctConnected*agtCnt)
-β=rand(Uniform(0.05,.5),sweeps)
-agtGraph=watts_strogatz.(agtCnt, expDegree, β)
+pctConnectedVec=sort(repeat(rand(Uniform(.05,.25),sweeps),reps))
+expDegreeVec=sort(repeat(floor.(Int64,pctConnected.*agtCntVec),reps))
+βVec=sort(repeat(rand(Uniform(0.05,.5),sweeps),reps))
+
 # Finally, we need a Poisson parameter to how much agents search
-searchQty=rand(Uniform(5,100),sweeps)
-searchQtyVec=Poisson.(searchQty)
+searchQtyVec=sort(repeat(rand(Uniform(5,100),sweeps),reps))
 
 
-for s in 1:sweeps
+currTime=now()
+
+ctrlFrame=DataFrame()
+ctrlFrame[!,"dateTime"]=repeat([currTime],sweeps*reps)
+ctrlFrame[!,"seed1"]=seed1
+ctrlFrame[!,"seed2"]=seed2
+ctrlFrame[!,"key"]=string.(repeat([currTime],sweeps*reps)).*"-".*string.(seed1) .*"-".*string.(seed2).*"-".*string.(1:(sweeps*reps)) 
+ctrlFrame[!,"privacyVal"]=privacyValVec
+ctrlFrame[!,"searchResolution"]=searchResolutionVec
+ctrlFrame[!,"switchPct"]=switchPctVec
+ctrlFrame[!,"agtCnt"]=agtCntVec
+ctrlFrame[!,"pctConnected"]=pctConnectedVec
+ctrlFrame[!,"expDegree"]=expDegreeVec
+ctrlFrame[!,"β"]=βVec
+ctrlFrame[!,"searchQty"]=searchQtyVec
+ctrlFrame[!,"complete"]=repeat([false],sweeps*reps)
+
+
+# now, we need to determine the behavior
+
+#global duckTick=paramVec[6]
+#global vpnTick=paramVec[7]
+#global deletionTick=paramVec[8]
+#global sharingTick=paramVec[9]
+#global modRuns=paramVec[10]
+
+
+
+# now shuffle the frame so partial runs are more useful
+shuffle!(ctrlFrame)
+
+# now, we have 16 cores 
+t=0
+coreDict=Dict()
+for k in 2:cores
+    coreDict[k]=nothing
+end
+
+while true
+    if size(ctrlFrame[ctrlFrame[:,"complete"].==false,:])[1]==0
+        break
+    end
+    t=t+1
+    for c in 2:cores
+        if isnothing(coreDict[c])
+            ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
+            @spawnat c ParameterSweep(ctrlWorking[1,:])
+
+        elseif isready(coreDict[c])
+            res=fetch(coreDict[c])
+            ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
+            @spawnat c ParameterSweep(ctrlWorking[1,:])
+            ctrlFrame[ctrlFrame.key.==res,:complete].=true
+        end
+    end
 
 
 end
