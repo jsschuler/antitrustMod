@@ -72,10 +72,10 @@ function ParameterSweep(paramVec)
     # set the Graph structure
     global pctConnected=paramVec[9]
     global expDegree=floor(Int64,pctConnected*agtCnt)
-    global β=paramVec[9]
+    global β=paramVec[10]
     global agtGraph=watts_strogatz(agtCnt, expDegree, β)
     # Finally, we need a Poisson parameter to how much agents search
-    global searchQty=Poisson{Int64}(paramVec[10])
+    global searchQty=Poisson{Int64}(paramVec[11])
 
     # get a string to identify this run
     currTime=string(now())
@@ -107,14 +107,19 @@ function ParameterSweep(paramVec)
     # order of introdudction, 
 
     # Duck Duck Go must be introduced before data sharing 
+    order=paramVec[12]
+    modRuns=100
+    tickIntros=rand(DiscreteUniform(1,100),length(order))
+    tickIntros=tickIntros[[order]]
+    duckTick=tickIntros[1]
+    vpnTick=tickIntros[2]
+    deletionTick=tickIntros[3]
+    sharingTick=tickIntros[4]
+    
 
-    global duckTick=paramVec[6]
-    global vpnTick=paramVec[7]
-    global deletionTick=paramVec[8]
-    global sharingTick=paramVec[9]
-    global modRuns=paramVec[10]
+    Random.seed!(paramVec[3])
 
-
+    key=paramVec[4]
     tick=0
     for ticker in 1:modRuns
         # principle 1: agents search no matter what 
@@ -174,14 +179,16 @@ function ParameterSweep(paramVec)
         #schedulePrint(scheduleActDict)
         resetSchedule()
         # now plot data
-        svgGen(tick)
+        #svgGen(tick)
+        # now save data
+
     end
     return key
 end
 
 # now generate the data structure for the parameter sweep
 
-sweeps=100
+sweeps=20
 reps=5
 
 # generate a seed 
@@ -196,7 +203,7 @@ privacyValVec=sort(repeat(rand(Uniform(1.1,30),sweeps),reps))
 searchResolutionVec=repeat([.05],sweeps*reps)
 # we need a Poisson process for how many agents act exogenously 
 switchPctVec=sort(repeat(rand(Uniform(0.01,0.2),sweeps),reps))
-agtCntVec=sort(repeat(rand(DiscreteUniform(1000,10000),sweeps),reps))
+agtCntVec=sort(repeat(rand(DiscreteUniform(1000,1000),sweeps),reps))
 #poissonDist=sort(repeat(Poisson.(switchPct.*agtCnt),reps))
 # and a probability distribution for how much agents search 
 # set the Graph structure
@@ -214,7 +221,7 @@ ctrlFrame=DataFrame()
 ctrlFrame[!,"dateTime"]=repeat([currTime],sweeps*reps)
 ctrlFrame[!,"seed1"]=seed1
 ctrlFrame[!,"seed2"]=seed2
-ctrlFrame[!,"key"]=string.(repeat([currTime],sweeps*reps)).*"-".*string.(seed1) .*"-".*string.(seed2).*"-".*string.(1:(sweeps*reps)) 
+ctrlFrame[!,"key"]=string.(repeat([currTime],sweeps*reps)).*"-".*string.(seed1) .*"-".*string.(seed2).*"-"
 ctrlFrame[!,"privacyVal"]=privacyValVec
 ctrlFrame[!,"searchResolution"]=searchResolutionVec
 ctrlFrame[!,"switchPct"]=switchPctVec
@@ -223,7 +230,7 @@ ctrlFrame[!,"pctConnected"]=pctConnectedVec
 ctrlFrame[!,"expDegree"]=expDegreeVec
 ctrlFrame[!,"β"]=βVec
 ctrlFrame[!,"searchQty"]=searchQtyVec
-ctrlFrame[!,"complete"]=repeat([false],sweeps*reps)
+
 
 
 # now, we need to determine the behavior
@@ -258,13 +265,47 @@ for combo in introCombos
     end
 end
 
+remDex=[]
+for i in 1:length(allOrders)
+    # check if it contains sharing =4 
+    # and Duck Duck Go=1
+    duckGo=false
+    share=false
+    duckIdx=0
+    shareIdx=0
+    
+    for j in 1:length(allOrders[i])
+        
+        if allOrders[i][j]==1
+            duckGo=true
+            duckIdx=j
+            println("Hit1")
+        elseif allOrders[i][j]==4
+            share=true
+            shareIdx=j
+            println("Hit4")
+        else
+            nothing
+        end
+        println(allOrders[i][j])
+    end
 
-# now there are 4! orders in which we can introduce the major actions 
-perms = collect(permutations([1,2,3,4]))
-# we will iterate these and then drop cases where 
+    if duckGo & share & (shareIdx < duckIdx)
+        push!(remDex,i)
+        println("Hit!")
 
+    end
 
+end
 
+splice!(allOrders,remDex)
+allOrders=tuple.(allOrders)
+orderFrame=DataFrame(allOrders)
+rename!(orderFrame,:1 => :order)
+# now join these 
+ctrlFrame=crossjoin(ctrlFrame,orderFrame)
+ctrlFrame.key=ctrlFrame.key.*string.(1:size(ctrlFrame)[1])
+ctrlFrame[!,"complete"]=repeat([false],size(ctrlFrame)[1])
 # now shuffle the frame so partial runs are more useful
 shuffle!(ctrlFrame)
 
@@ -292,6 +333,4 @@ while true
             ctrlFrame[ctrlFrame.key.==res,:complete].=true
         end
     end
-
-
 end
