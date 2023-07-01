@@ -1,4 +1,4 @@
-cores=8
+cores=16
 using Distributed
 using Combinatorics
 @everywhere using CSV
