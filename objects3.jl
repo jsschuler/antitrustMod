@@ -372,6 +372,7 @@ function actionCombine()
     #println(allEngines)
     # now, an array of quotes
     qArray=[]
+    global structTuples
     actionTicker=length(structTuples)
     for l in allLaws
         for e in engineList

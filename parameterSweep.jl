@@ -1,6 +1,7 @@
 cores=16
 using Distributed
 using Combinatorics
+@everywhere using CSV
 @everywhere using DataFrames
 @everywhere using Distributions
 @everywhere using InteractiveUtils
@@ -8,6 +9,7 @@ using Combinatorics
 @everywhere using Random
 @everywhere using JLD2
 @everywhere using Dates
+
 # this code runs the parameter sweep
 
 # declare global variables 
@@ -26,6 +28,9 @@ using Combinatorics
     agtGraph=watts_strogatz(agtCnt, expDegree, β)
     # Finally, we need a Poisson parameter to how much agents search
     searchQty=Poisson{Int64}(4.0)
+    modeGen::Beta{Float64}=Beta(5,5)
+    betaGen::Exponential{Float64}=Exponential(5)
+    poissonDist::Poisson{Float64}=Poisson(.5)
 end
 
 
@@ -60,8 +65,12 @@ end
 
 
 function ParameterSweep(paramVec)
+    # create a file to hold data 
+    
     Random.seed!(paramVec[2])
-
+    global modeGen
+    global key=paramVec[4]
+    currCSV="../antiTrustData/output"*key*".csv"
     privacyVal=paramVec[5]
     global privacyBeta=Beta(1.0,privacyVal)
     # how close does the offered search result have to be before the agent accepts it?
@@ -75,11 +84,11 @@ function ParameterSweep(paramVec)
     global β=paramVec[10]
     global agtGraph=watts_strogatz(agtCnt, expDegree, β)
     # Finally, we need a Poisson parameter to how much agents search
-    global searchQty=Poisson{Int64}(paramVec[11])
-
+    global searchQty=Poisson{Float64}(paramVec[11])
+    global poissonDist=Poisson(switchPct*agtCnt)
     # get a string to identify this run
     currTime=string(now())
-    run(`mkdir ../antiTrustPlots/run$strSeed-$currTime`)
+    #run(`mkdir ../antiTrustPlots/plot$key`)
 
 
     # now, we need afour of global dictionaries 
@@ -107,20 +116,36 @@ function ParameterSweep(paramVec)
     # order of introdudction, 
 
     # Duck Duck Go must be introduced before data sharing 
-    order=paramVec[12]
+    order=paramVec[13]
     modRuns=100
     tickIntros=rand(DiscreteUniform(1,100),length(order))
-    tickIntros=tickIntros[[order]]
-    duckTick=tickIntros[1]
-    vpnTick=tickIntros[2]
-    deletionTick=tickIntros[3]
-    sharingTick=tickIntros[4]
+
+    if 1 in order
+        duckTick=tickIntros[order.==1][1]
+    else 
+        duckTick=-10
+    end
+    if 2 in order
+        vpnTick=tickIntros[order.==2][1]
+    else
+        vpnTick=-10
+    end
+    if 3 in order
+        deletionTick=tickIntros[order.==3][1]
+    else
+        deletionTick=-10
+    end
+    if 4 in order
+        sharingTick=tickIntros[order.==4][1]
+    else
+        sharingTick=-10
+    end
     
 
     Random.seed!(paramVec[3])
 
     key=paramVec[4]
-    tick=0
+    #tick=0
     for ticker in 1:modRuns
         # principle 1: agents search no matter what 
         global tick
@@ -182,6 +207,14 @@ function ParameterSweep(paramVec)
         #svgGen(tick)
         # now save data
 
+        # We can save market share data 
+
+        for agt in agtList
+            vecOut=DataFrame(KeyCol=key,TickCol=tick,agtCol=agt.agtNum,agtEngine=agt.currEngine)
+            # Create a CSV.Writer object for the file
+            CSV.write(currCSV, vecOut,header = false,append=true)
+        end
+
     end
     return key
 end
@@ -208,7 +241,7 @@ agtCntVec=sort(repeat(rand(DiscreteUniform(1000,1000),sweeps),reps))
 # and a probability distribution for how much agents search 
 # set the Graph structure
 pctConnectedVec=sort(repeat(rand(Uniform(.05,.25),sweeps),reps))
-expDegreeVec=sort(repeat(floor.(Int64,pctConnected.*agtCntVec),reps))
+expDegreeVec=floor.(Int64,pctConnected.*agtCntVec)
 βVec=sort(repeat(rand(Uniform(0.05,.5),sweeps),reps))
 
 # Finally, we need a Poisson parameter to how much agents search
@@ -227,6 +260,9 @@ ctrlFrame[!,"searchResolution"]=searchResolutionVec
 ctrlFrame[!,"switchPct"]=switchPctVec
 ctrlFrame[!,"agtCnt"]=agtCntVec
 ctrlFrame[!,"pctConnected"]=pctConnectedVec
+println("Debug")
+println(size(ctrlFrame))
+println(length(expDegreeVec))
 ctrlFrame[!,"expDegree"]=expDegreeVec
 ctrlFrame[!,"β"]=βVec
 ctrlFrame[!,"searchQty"]=searchQtyVec
@@ -279,11 +315,11 @@ for i in 1:length(allOrders)
         if allOrders[i][j]==1
             duckGo=true
             duckIdx=j
-            println("Hit1")
+            
         elseif allOrders[i][j]==4
             share=true
             shareIdx=j
-            println("Hit4")
+            
         else
             nothing
         end
@@ -292,7 +328,7 @@ for i in 1:length(allOrders)
 
     if duckGo & share & (shareIdx < duckIdx)
         push!(remDex,i)
-        println("Hit!")
+        
 
     end
 
@@ -311,26 +347,29 @@ shuffle!(ctrlFrame)
 
 # now, we have 16 cores 
 t=0
-coreDict=Dict()
-for k in 2:cores
-    coreDict[k]=nothing
-end
-
-while true
-    if size(ctrlFrame[ctrlFrame[:,"complete"].==false,:])[1]==0
-        break
-    end
-    t=t+1
-    for c in 2:cores
-        if isnothing(coreDict[c])
-            ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
-            @spawnat c ParameterSweep(ctrlWorking[1,:])
-
-        elseif isready(coreDict[c])
-            res=fetch(coreDict[c])
-            ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
-            @spawnat c ParameterSweep(ctrlWorking[1,:])
-            ctrlFrame[ctrlFrame.key.==res,:complete].=true
-        end
-    end
-end
+#coreDict=Dict()
+#for k in 2:cores
+#    coreDict[k]=nothing
+#end
+#
+#while true
+#    if size(ctrlFrame[ctrlFrame[:,"complete"].==false,:])[1]==0
+#        break
+#    end
+#    t=t+1
+#    for c in 2:cores
+#        if isnothing(coreDict[c])
+#            ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
+#            @spawnat c ParameterSweep(ctrlWorking[1,:])
+#
+#        elseif isready(coreDict[c])
+#            res=fetch(coreDict[c])
+#            ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
+#            @spawnat c ParameterSweep(ctrlWorking[1,:])
+#            ctrlFrame[ctrlFrame.key.==res,:complete].=true
+#        end
+#    end
+#end
+@everywhere tick=0
+@everywhere structTuples=Set([])
+ParameterSweep(ctrlFrame[1,:])
