@@ -28,8 +28,8 @@ for ticker in 1:modRun
     # now introduce new laws if applicable 
     if tick==vpnTick
         println("VPN In")
-        #vpnGen(tick)
-        #@actionGen()
+        vpnGen(tick)
+        @actionGen()
     end
     #println("Tick")
     #println(tick)

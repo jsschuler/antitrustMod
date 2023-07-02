@@ -122,37 +122,41 @@ end
         sharingDict[agt]=false
     end
 
-    global order=paramVec[13]
+    
     global seed2=paramVec[3]
     global key=paramVec[4]
 
     # now, given the model run count, determine ticks on which to enter laws and Duck Duck Go
-    orderVec=paramVec[14]
-    tickIntros=rand(DiscreteUniform(1,100),length(order))
+    global orderVec=paramVec[14]
+    tickIntros=rand(DiscreteUniform(1,100),length(orderVec))
 
-    if 1 in order
-        global duckTick=tickIntros[order.==1][1]
+
+
+    if 1 in orderVec
+        global duckTick=tickIntros[orderVec.==1][1]
     else 
         global duckTick=-10
     end
-    if 2 in order
-        global vpnTick=tickIntros[order.==2][1]
+    if 2 in orderVec
+        global vpnTick=tickIntros[orderVec.==2][1]
     else
         global vpnTick=-10
     end
-    if 3 in order
-        global deletionTick=tickIntros[order.==3][1]
+    if 3 in orderVec
+        global deletionTick=tickIntros[orderVec.==3][1]
     else
         global deletionTick=-10
     end
-    if 4 in order
-        global sharingTick=tickIntros[order.==4][1]
+    if 4 in orderVec
+        global sharingTick=tickIntros[orderVec.==4][1]
     else
         global sharingTick=-10
     end
 
-
-
+    # now save the order of entrance data
+    
+    orderCSV="../antiTrustData/order.csv"
+    CSV.write(orderCSV, [key,duckTick,vpnTick,deletionTick,sharingTick],header = false,append=true)
     return :parametersSet
 end
 

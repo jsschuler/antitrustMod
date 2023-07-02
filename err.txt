@@ -1,0 +1,94 @@
+Worker 6 terminated.
+UNHANDLED TASK ERROR: EOFError: read end of file
+Stacktrace:
+ [1] (::Base.var"#wait_locked#680")(s::Sockets.TCPSocket, buf::IOBuffer, nb::Int64)
+   @ Base ./stream.jl:945
+ [2] unsafe_read(s::Sockets.TCPSocket, p::Ptr{UInt8}, nb::UInt64)
+   @ Base ./stream.jl:953
+ [3] unsafe_read
+   @ ./io.jl:759 [inlined]
+ [4] unsafe_read(s::Sockets.TCPSocket, p::Base.RefValue{NTuple{4, Int64}}, n::Int64)
+   @ Base ./io.jl:758
+ [5] read!
+   @ ./io.jl:760 [inlined]
+ [6] deserialize_hdr_raw
+   @ /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/messages.jl:167 [inlined]
+ [7] message_handler_loop(r_stream::Sockets.TCPSocket, w_stream::Sockets.TCPSocket, incoming::Bool)
+   @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/process_messages.jl:172
+ [8] process_tcp_streams(r_stream::Sockets.TCPSocket, w_stream::Sockets.TCPSocket, incoming::Bool)
+   @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/process_messages.jl:133
+ [9] (::Distributed.var"#103#104"{Sockets.TCPSocket, Sockets.TCPSocket, Bool})()
+   @ Distributed ./task.jl:484
+Worker 4 terminated.
+UNHANDLED TASK ERROR: IOError: read: connection reset by peer (ECONNRESET)
+Stacktrace:
+  [1] wait_readnb(x::Sockets.TCPSocket, nb::Int64)
+    @ Base ./stream.jl:410
+  [2] (::Base.var"#wait_locked#680")(s::Sockets.TCPSocket, buf::IOBuffer, nb::Int64)
+    @ Base ./stream.jl:947
+  [3] unsafe_read(s::Sockets.TCPSocket, p::Ptr{UInt8}, nb::UInt64)
+    @ Base ./stream.jl:953
+  [4] unsafe_read
+    @ ./io.jl:759 [inlined]
+  [5] unsafe_read(s::Sockets.TCPSocket, p::Base.RefValue{NTuple{4, Int64}}, n::Int64)
+    @ Base ./io.jl:758
+  [6] read!
+    @ ./io.jl:760 [inlined]
+  [7] deserialize_hdr_raw
+    @ /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/messages.jl:167 [inlined]
+  [8] message_handler_loop(r_stream::Sockets.TCPSocket, w_stream::Sockets.TCPSocket, incoming::Bool)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/process_messages.jl:172
+  [9] process_tcp_streams(r_stream::Sockets.TCPSocket, w_stream::Sockets.TCPSocket, incoming::Bool)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/process_messages.jl:133
+ [10] (::Distributed.var"#103#104"{Sockets.TCPSocket, Sockets.TCPSocket, Bool})()
+    @ Distributed ./task.jl:484
+Worker 2 terminated.
+ERROR: LoadError: ProcessExitedException(2)
+Stacktrace:
+  [1] try_yieldto(undo::typeof(Base.ensure_rescheduled))
+    @ Base ./task.jl:871
+  [2] wait()
+    @ Base ./task.jl:931
+  [3] wait(c::Base.GenericCondition{ReentrantLock})
+    @ Base ./condition.jl:124
+  [4] take_buffered(c::Channel{Any})
+    @ Base ./channels.jl:416
+  [5] take!(c::Channel{Any})
+    @ Base ./channels.jl:410
+  [6] take!(::Distributed.RemoteValue)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:726
+  [7] remotecall_fetch(f::Function, w::Distributed.Worker, args::Distributed.RRID; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:461
+  [8] remotecall_fetch(f::Function, w::Distributed.Worker, args::Distributed.RRID)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:454
+  [9] #remotecall_fetch#162
+    @ /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:492 [inlined]
+ [10] remotecall_fetch
+    @ /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:492 [inlined]
+ [11] isready(rr::Future)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:220
+ [12] top-level scope
+    @ ~/ResearchCode/antitrustMod/parameterSweep4.jl:309
+in expression starting at /home/jsschuler/ResearchCode/antitrustMod/parameterSweep4.jl:299
+UNHANDLED TASK ERROR: IOError: read: connection reset by peer (ECONNRESET)
+Stacktrace:
+  [1] wait_readnb(x::Sockets.TCPSocket, nb::Int64)
+    @ Base ./stream.jl:410
+  [2] (::Base.var"#wait_locked#680")(s::Sockets.TCPSocket, buf::IOBuffer, nb::Int64)
+    @ Base ./stream.jl:947
+  [3] unsafe_read(s::Sockets.TCPSocket, p::Ptr{UInt8}, nb::UInt64)
+    @ Base ./stream.jl:953
+  [4] unsafe_read
+    @ ./io.jl:759 [inlined]
+  [5] unsafe_read(s::Sockets.TCPSocket, p::Base.RefValue{NTuple{4, Int64}}, n::Int64)
+    @ Base ./io.jl:758
+  [6] read!
+    @ ./io.jl:760 [inlined]
+  [7] deserialize_hdr_raw
+    @ /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/messages.jl:167 [inlined]
+  [8] message_handler_loop(r_stream::Sockets.TCPSocket, w_stream::Sockets.TCPSocket, incoming::Bool)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/process_messages.jl:172
+  [9] process_tcp_streams(r_stream::Sockets.TCPSocket, w_stream::Sockets.TCPSocket, incoming::Bool)
+    @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/process_messages.jl:133
+ [10] (::Distributed.var"#103#104"{Sockets.TCPSocket, Sockets.TCPSocket, Bool})()
+    @ Distributed ./task.jl:484
