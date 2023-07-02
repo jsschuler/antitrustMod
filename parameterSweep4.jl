@@ -156,7 +156,7 @@ end
     return :parametersSet
 end
 
-sweeps=2
+sweeps=50
 reps=5
 
 # generate a seed 

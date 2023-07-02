@@ -1,3 +1,7 @@
+
+Random.seed!(seed2)
+
+
 # we need an array to store the already generated structs to avoid redefining them 
 structTuples=Set([])
 # order of introdudction, 
@@ -25,9 +29,6 @@ if 4 in order
 else
     sharingTick=-10
 end
-
-Random.seed!(seed2)
-
 #tick=0
 for ticker in 1:modRuns
     # principle 1: agents search no matter what 
@@ -64,4 +65,6 @@ for ticker in 1:modRuns
     end
     #println("Action List")
     #println(length(actionList))
+
+    
 end
