@@ -5,7 +5,7 @@
 #            OECD Version                                                                                 #
 #                                                                                                         #
 ###########################################################################################################
-cores=16
+cores=2
 using Distributed
 using Combinatorics
 @everywhere using CSV
@@ -156,12 +156,12 @@ end
     # now save the order of entrance data
     
     orderCSV="../antiTrustData/order.csv"
-    CSV.write(orderCSV, [key,duckTick,vpnTick,deletionTick,sharingTick],header = false,append=true)
+    CSV.write(orderCSV, DataFrame([:Key => key,:Duck => duckTick, :VPN => vpnTick,:Delete => deletionTick,:Sharing => sharingTick]),header = false,append=true)
     return :parametersSet
 end
 
-sweeps=50
-reps=5
+sweeps=10
+reps=1
 
 # generate a seed 
 seed1=sort(repeat(rand(DiscreteUniform(1,10000),sweeps),reps))

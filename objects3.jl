@@ -54,7 +54,7 @@ mutable struct agent
     lastMask::Any
 end
 
-
+function
 
 # we need a preliminary set of search objects 
 
@@ -250,6 +250,7 @@ function actQuoteFunc(law,engine,idx)
             push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
                 if agt.currEngine==action.engine
+                    println(action.engine.aliasHld)
                     action.engine.aliasHld[agt.mask]=action.engine.aliasData[agt.mask]
                     action.engine.aliasData[agt.mask]=[]
                     agt.lastAct=action
