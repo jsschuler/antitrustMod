@@ -1,0 +1,102 @@
+
+signal (15): Terminated
+in expression starting at /home/jsschuler/ResearchCode/antitrustMod/parameterSweep2.jl:302
+== at ./promotion.jl:477 [inlined]
+iterate at ./range.jl:883 [inlined]
+sertag at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:97 [inlined]
+serialize_type at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:598
+serialize_cycle_header at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:177 [inlined]
+serialize at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:352
+unknown function (ip: 0x7ff3c518c996)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+serialize_any at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:675
+serialize at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:654
+unknown function (ip: 0x7ff3c5150c66)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+serialize_any at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:675
+serialize at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:654
+unknown function (ip: 0x7ff3c5150c66)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+serialize_any at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:675
+serialize at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Serialization/src/Serialization.jl:654
+unknown function (ip: 0x7ff3c5150c66)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+serialize_msg at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/messages.jl:78
+unknown function (ip: 0x7ff3c5188a71)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+jl_apply at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
+jl_f__call_latest at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/builtins.c:774
+#invokelatest#2 at ./essentials.jl:729 [inlined]
+invokelatest at ./essentials.jl:726 [inlined]
+send_msg_ at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/messages.jl:181
+send_msg at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/messages.jl:122 [inlined]
+#remotecall#156 at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:436 [inlined]
+remotecall at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:434
+unknown function (ip: 0x7ff3c51888f6)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+#remotecall#157 at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:447
+remotecall at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/remotecall.jl:447 [inlined]
+spawnat at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/macros.jl:11
+unknown function (ip: 0x7ff3c51886b9)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+jl_apply at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
+do_call at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/interpreter.c:126
+eval_value at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/interpreter.c:215
+eval_body at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/interpreter.c:467
+jl_interpret_toplevel_thunk at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/interpreter.c:750
+jl_toplevel_eval_flex at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/toplevel.c:906
+jl_toplevel_eval_flex at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/toplevel.c:850
+ijl_toplevel_eval_in at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/toplevel.c:965
+eval at ./boot.jl:368 [inlined]
+include_string at ./loading.jl:1428
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+_include at ./loading.jl:1488
+include at ./Base.jl:419
+jfptr_include_47457.clone_1 at /opt/julia-1.8.4/lib/julia/sys.so (unknown line)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+exec_options at ./client.jl:303
+_start at ./client.jl:522
+jfptr__start_58474.clone_1 at /opt/julia-1.8.4/lib/julia/sys.so (unknown line)
+_jl_invoke at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
+ijl_apply_generic at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/gf.c:2559
+jl_apply at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
+true_main at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/jlapi.c:575
+jl_repl_entrypoint at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/src/jlapi.c:719
+main at /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/cli/loader_exe.c:59
+__libc_start_call_main at /lib64/libc.so.6 (unknown line)
+__libc_start_main at /lib64/libc.so.6 (unknown line)
+unknown function (ip: 0x401098)
+unknown function (ip: (nil))
+Allocations: 23988503682 (Pool: 23236460321; Big: 752043361); GC: 66527
+┌ Warning: Forcibly interrupting busy workers
+│   exception = task switch not allowed from inside gc finalizer
+└ @ Distributed /cache/build/default-aws-shared0-3/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/Distributed/src/cluster.jl:1253
+task switch not allowed from inside gc finalizer
+Stacktrace:
+ [1] try_yieldto(undo::typeof(Base.ensure_rescheduled))
+   @ Base ./task.jl:861
+ [2] wait()
+   @ Base ./task.jl:931
+ [3] wait(c::Base.GenericCondition{Base.Threads.SpinLock})
+   @ Base ./condition.jl:124
+ [4] _wait(t::Task)
+   @ Base ./task.jl:304
+ [5] sync_end(c::Channel{Any})
+   @ Base ./task.jl:395
+ [6] macro expansion
+   @ ./task.jl:455 [inlined]
+ [7] interrupt(pids::Vector{Int64})
+   @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/cluster.jl:1220
+ [8] terminate_all_workers()
+   @ Distributed /opt/julia-1.8.4/share/julia/stdlib/v1.8/Distributed/src/cluster.jl:1255
+ [9] _atexit()
+   @ Base ./initdefs.jl:372

@@ -289,7 +289,7 @@ function actQuoteFunc(law,engine,idx)
             myEngine=filter(x-> typeof(x)==$engineNm,engineList)[1]
             push!(actionList,$actNm(myLaw,myEngine))
             function beforeAct(agt::agent,action::$actNm)
-                if agt.engine!=action.engine
+                if agt.currEngine!=action.engine
                     println("different")
                     # share data from the agent's current search engine to its target search engine. 
                     action.engine.aliasData[agt.mask]=agt.currEngine.aliasData[agt.mask]

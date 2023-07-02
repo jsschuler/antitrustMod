@@ -1,3 +1,10 @@
+###########################################################################################################
+#            Antitrust Model Parameter Sweep                                                              #
+#            April 2022                                                                                   #
+#            John S. Schuler                                                                              #
+#            OECD Version                                                                                 #
+#                                                                                                         #
+###########################################################################################################
 cores=16
 using Distributed
 using Combinatorics
@@ -31,6 +38,12 @@ using Combinatorics
     modeGen::Beta{Float64}=Beta(5,5)
     betaGen::Exponential{Float64}=Exponential(5)
     poissonDist::Poisson{Float64}=Poisson(.5)
+    modRun::Int64=100
+
+    duckTick=-10
+    vpnTick=-10
+    deletionTick=-10
+    sharingTick=-10
 end
 
 
@@ -61,9 +74,6 @@ end
     sharingDict=Dict{agent,Bool}()
 end
 
-
-
-
 @everywhere function loadParameters(paramVec)
     # create a file to hold data 
     
@@ -89,6 +99,7 @@ end
     # get a string to identify this run
     currTime=string(now())
     #run(`mkdir ../antiTrustPlots/plot$key`)
+    global modrun=paramVec[13]
 
 
     # now, we need afour of global dictionaries 
@@ -114,50 +125,36 @@ end
     global order=paramVec[13]
     global seed2=paramVec[3]
     global key=paramVec[4]
+
+    # now, given the model run count, determine ticks on which to enter laws and Duck Duck Go
+    orderVec=paramVec[14]
+    tickIntros=rand(DiscreteUniform(1,100),length(order))
+
+    if 1 in order
+        global duckTick=tickIntros[order.==1][1]
+    else 
+        global duckTick=-10
+    end
+    if 2 in order
+        global vpnTick=tickIntros[order.==2][1]
+    else
+        global vpnTick=-10
+    end
+    if 3 in order
+        global deletionTick=tickIntros[order.==3][1]
+    else
+        global deletionTick=-10
+    end
+    if 4 in order
+        global sharingTick=tickIntros[order.==4][1]
+    else
+        global sharingTick=-10
+    end
+
+
+
     return :parametersSet
 end
-
-
-
-
-
-# Step 1: agents previously scheduled to act take action
-# some of these agents were chosen exogenously, 
-# some because they were neighbors of agents that did act 
-global agtList
-for agt in agtList
-    takeAction(agt)
-end
-
-# now, some agents are chosen exogenously to act next time
-exogenousActs()
-# Step 2: agents search 
-
-allSearches(tick)
-
-# Step 3: agents decide to reverse the action or not
-for agt in agtList
-    reverseDecision(agt)
-end
-# now, make the next tick's dictionary the current one
-#schedulePrint(currentActDict)
-#schedulePrint(scheduleActDict)
-resetSchedule()
-# now plot data
-#svgGen(tick)
-# now save data
-# We can save market share data 
-currCSV="../antiTrustData/output"*key*".csv"
-for agt in agtList
-    vecOut=DataFrame(KeyCol=key,TickCol=tick,agtCol=agt.agtNum,agtEngine=typeof(agt.currEngine))
-    # Create a CSV.Writer object for the file
-    CSV.write(currCSV, vecOut,header = false,append=true)
-end
-
-    
-
-
-# now generate the data structure for the parameter sweep
 
 sweeps=2
 reps=5
@@ -184,7 +181,7 @@ expDegreeVec=floor.(Int64,pctConnected.*agtCntVec)
 
 # Finally, we need a Poisson parameter to how much agents search
 searchQtyVec=sort(repeat(rand(Uniform(5,100),sweeps),reps))
-
+modRunVec=repeat([100],sweeps*reps)
 
 currTime=now()
 
@@ -198,14 +195,13 @@ ctrlFrame[!,"searchResolution"]=searchResolutionVec
 ctrlFrame[!,"switchPct"]=switchPctVec
 ctrlFrame[!,"agtCnt"]=agtCntVec
 ctrlFrame[!,"pctConnected"]=pctConnectedVec
-println("Debug")
-println(size(ctrlFrame))
-println(length(expDegreeVec))
+#println("Debug")
+#println(size(ctrlFrame))
+#println(length(expDegreeVec))
 ctrlFrame[!,"expDegree"]=expDegreeVec
 ctrlFrame[!,"β"]=βVec
 ctrlFrame[!,"searchQty"]=searchQtyVec
-
-
+ctrlFrame[!,"modRun"]=modRunVec
 
 # now, we need to determine the behavior
 
@@ -273,9 +269,11 @@ for i in 1:length(allOrders)
 end
 
 splice!(allOrders,remDex)
-allOrders=tuple.(allOrders)
-orderFrame=DataFrame(allOrders)
-rename!(orderFrame,:1 => :order)
+
+#println(allOrders)
+
+orderFrame=DataFrame(:order=>allOrders)
+
 # now join these 
 ctrlFrame=crossjoin(ctrlFrame,orderFrame)
 ctrlFrame.key=ctrlFrame.key.*string.(1:size(ctrlFrame)[1])
@@ -284,7 +282,7 @@ ctrlFrame[!,"complete"]=repeat([false],size(ctrlFrame)[1])
 CSV.write("../antiTrustData/ctrl.csv", ctrlFrame,header = true,append=true)
 shuffle!(ctrlFrame)
 
-# now, we have 16 cores 
+#now, we have 16 cores 
 @everywhere t=0
 @everywhere tick=0
 @everywhere structTuples=Set([])
@@ -297,6 +295,7 @@ for k in 2:cores
     keyDict[k]=nothing
 end
 t=0
+
 while maximum(ctrlFrame.complete.==false)==true
     global t
     t=t+1
@@ -304,28 +303,21 @@ while maximum(ctrlFrame.complete.==false)==true
         if isnothing(coreDict[c])
             println("Initial Spawn")
             ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
-            coreDict[c]=@spawnat c searchAll(ctrlWorking[1,:])
+            coreDict[c]=@spawnat c loadParameters(ctrlWorking[1,:])
             keyDict[c]=ctrlWorking[1,:key]
 
         elseif isready(coreDict[c])
             res=fetch(coreDict[c])
-            if res==:initial
-                println("Spawn Flow")
-                coreDict[c]=@spawnat c include("modelFlow.jl")
+            if res==:parametersSet
+                println("Spawn Main Model")
+                coreDict[c]=@spawnat c include("orderGen.jl")
             elseif res==:final
                 println("Clean Up")
                 ctrlFrame[ctrlFrame.key.==keyDict[c],:complete].=true
                 coreDict[c]=nothing
                 keyDict[c]=nothing
-            else
-                println("Spawn final")
-                res=@spawnat c genActionAll()
             end
             
         end
     end
 end
-#ctrlWorking=ctrlFrame[ctrlFrame[:,"complete"].==false,:]
-#searchAll(ctrlWorking[1,:])
-#include("modelFlow.jl")
-#genActionAll()
