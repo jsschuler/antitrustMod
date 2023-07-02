@@ -1,16 +1,3 @@
-for agt in agtList
-    currentActDict[agt]=nothing
-    scheduleActDict[agt]=nothing
-    deletionDict[agt]=false
-    sharingDict[agt]=false
-end
-# we need an array to store the already generated structs to avoid redefining them 
-structTuples=Set([])
-
-# make a directory for the svg files
-#currTime=string(now())
-#run(`mkdir ../antiTrustPlots/run$strSeed-$currTime`)
-
 tick=0
 for ticker in 1:modRun
     # principle 1: agents search no matter what 
@@ -60,9 +47,9 @@ for ticker in 1:modRun
         # now, some agents are chosen exogenously to act next time
         exogenousActs()
         # Step 2: agents search 
-
+    end
         allSearches(tick)
-
+    if tick > 1
         # Step 3: agents decide to reverse the action or not
         for agt in agtList
             reverseDecision(agt)
@@ -72,12 +59,12 @@ for ticker in 1:modRun
         #schedulePrint(scheduleActDict)
         resetSchedule()
 
-        currCSV="../antiTrustData/output"*key*".csv"
-        for agt in agtList
-            vecOut=DataFrame(KeyCol=key,TickCol=tick,agtCol=agt.agtNum,agtEngine=typeof(agt.currEngine))
-            # Create a CSV.Writer object for the file
-            CSV.write(currCSV, vecOut,header = false,append=true)
-        end
+    end
+    currCSV="../antiTrustData/output"*key*".csv"
+    for agt in agtList
+        vecOut=DataFrame(KeyCol=key,TickCol=tick,agtCol=agt.agtNum,agtEngine=typeof(agt.currEngine))
+        # Create a CSV.Writer object for the file
+        CSV.write(currCSV, vecOut,header = false,append=true)
     end
     # now plot data
     #svgGen(tick)
@@ -91,4 +78,4 @@ end
 #    println(sharingDict[k])
 #end
 
-res=:final
+:modComplete
